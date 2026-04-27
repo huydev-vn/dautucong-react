@@ -8,12 +8,12 @@ import { useAuthStore } from '@/features/auth';
 import { router } from '../router';
 
 function AuthInitializer() {
-  const initialize = useAuthStore((s) => s.initialize);
-  const isInitialized = useAuthStore((s) => s.isInitialized);
-
   useEffect(() => {
-    if (!isInitialized) initialize();
-  }, [initialize, isInitialized]);
+    // Zustand action là stable reference – chỉ cần chạy một lần sau mount.
+    // Tránh đưa action vào deps: nếu persist tạo lại state object khi rehydrate,
+    // reference mới sẽ trigger effect vô hạn lần.
+    useAuthStore.getState().initialize();
+  }, []);
 
   return null;
 }

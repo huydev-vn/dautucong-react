@@ -6,16 +6,5 @@ export function useAuth() {
   const login = useAuthStore((s) => s.login);
   const logout = useAuthStore((s) => s.logout);
 
-  const hasRole = (...roles: string[]) =>
-    !!user && roles.includes(user.role);
-
-  const canAccess = (resource: string, action: 'create' | 'read' | 'update' | 'delete') => {
-    if (!user) return false;
-    if (user.role === 'admin') return true;
-    return user.permissions.some(
-      (p) => p.resource === resource && p.actions.includes(action),
-    );
-  };
-
-  return { user, isAuthenticated, login, logout, hasRole, canAccess };
+  return { user, isAuthenticated, login, logout };
 }

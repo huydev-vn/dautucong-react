@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 import { withSuspense } from './PageLoader';
+import { PlaceholderPage } from '@/components/shared/PlaceholderPage';
 
 // ── Auth pages ────────────────────────────────────────────
 const LoginPage = lazy(() =>
@@ -67,16 +68,31 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="/dashboard" replace /> },
           { path: '/dashboard', element: withSuspense(DashboardPage) },
+
+          // Danh mục
+          { path: '/danh-muc', element: withSuspense(DanhMucPage) },
+          { path: '/danh-muc/nha-thau', element: <PlaceholderPage title="Danh mục nhà thầu" /> },
+          { path: '/danh-muc/dia-ban', element: <PlaceholderPage title="Danh mục địa bàn" /> },
+          { path: '/danh-muc/du-an-dau-tu', element: <PlaceholderPage title="Danh mục dự án đầu tư" /> },
+          { path: '/danh-muc/nha-dau-tu-tckt', element: <PlaceholderPage title="Nhà đầu tư & Tổ chức kinh tế" /> },
+
+          // Thông tin dự án
           { path: '/du-an', element: withSuspense(DuAnListPage) },
           { path: '/du-an/:id', element: withSuspense(DuAnDetailPage) },
           { path: '/ke-hoach-von', element: withSuspense(KeHoachVonListPage) },
           { path: '/giai-ngan', element: withSuspense(GiaiNganListPage) },
           { path: '/hop-dong', element: withSuspense(HopDongListPage) },
           { path: '/hop-dong/:id', element: withSuspense(HopDongDetailPage) },
-          { path: '/nha-thau', element: withSuspense(NhaThauListPage) },
+
+          // Nghiệp vụ khác
+          { path: '/tien-do-thuc-hien', element: <PlaceholderPage title="Quản lý tiến độ thực hiện" /> },
+          { path: '/ket-qua-du-an', element: <PlaceholderPage title="Kết quả thực hiện dự án" /> },
+          { path: '/thanh-tra-kiem-tra', element: <PlaceholderPage title="Quản lý thanh tra, kiểm tra" /> },
           { path: '/bao-cao', element: withSuspense(BaoCaoPage) },
+
+          // Quản trị
+          { path: '/nha-thau', element: withSuspense(NhaThauListPage) },
           { path: '/nguoi-dung', element: withSuspense(NguoiDungListPage) },
-          { path: '/danh-muc', element: withSuspense(DanhMucPage) },
         ],
       },
     ],

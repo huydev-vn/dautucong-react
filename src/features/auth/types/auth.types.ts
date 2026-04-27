@@ -1,30 +1,27 @@
+// Giữ lại để các module khác (nguoi-dung) dùng
 export type UserRole = 'admin' | 'manager' | 'editor' | 'viewer';
 
-export interface UserPermission {
-  resource: string;
-  actions: ('create' | 'read' | 'update' | 'delete')[];
-}
-
+/** Shape trả về từ backend POST /api/Auth/Login */
 export interface User {
-  id: string;
-  username: string;
-  hoTen: string;
-  email: string;
-  role: UserRole;
-  donVi: string;
-  permissions: UserPermission[];
-  avatar?: string;
+  Id: string;
+  TenDangNhap: string;
+  TenDaiDien: string;
+  MaDonVi: string;
 }
 
+/** Form dùng username/password; API layer map sang query param user/pass */
 export interface LoginPayload {
   username: string;
   password: string;
 }
 
+/** Backend trả về – refreshToken nằm trong HttpOnly cookie, không trong body */
 export interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
   user: User;
+  Menu: unknown[];
+  version: string;
+  DSTacVu: unknown[];
 }
 
 export interface AuthState {

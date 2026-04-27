@@ -6,26 +6,20 @@ import { STORAGE_KEYS } from '@/utils/constants';
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       accessToken: null,
       isAuthenticated: false,
       isInitialized: false,
 
       initialize: () => {
-        const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-        if (!token) {
-          set({ isInitialized: true });
-          return;
-        }
-        // Token already rehydrated by persist middleware above
         set({ isInitialized: true });
       },
 
       login: async (payload: LoginPayload) => {
         const res = await authApi.login(payload);
+        // refreshToken không lưu localStorage – backend set qua HttpOnly cookie
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, res.accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, res.refreshToken);
         set({
           user: res.user,
           accessToken: res.accessToken,
@@ -34,8 +28,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        const user = get().user;
+        // Fire-and-forget: thu hồi refresh token phía server
+        if (user?.Id) {
+          authApi.logout(user.Id);
+        }
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         set({ user: null, accessToken: null, isAuthenticated: false });
       },
 
@@ -43,16 +41,14 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: STORAGE_KEYS.USER,
-      // Chỉ persist những trường cần thiết
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
-        // localStorage rehydrate sync – đánh dấu đã khởi tạo
-        if (state) state.isInitialized = true;
-      },
+      // onRehydrateStorage KHÔNG được mutate state object trực tiếp sau khi
+      // useSyncExternalStore đã dispatch snapshot – sẽ gây tearing + infinite loop.
+      // Initialization được xử lý bởi AuthInitializer trong AppProvider.
     },
   ),
 );
