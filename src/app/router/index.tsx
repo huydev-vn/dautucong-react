@@ -1,0 +1,98 @@
+import { lazy } from 'react';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { AuthLayout } from '@/components/layout/AuthLayout';
+import { ProtectedRoute } from './ProtectedRoute';
+import { withSuspense } from './PageLoader';
+
+// ── Auth pages ────────────────────────────────────────────
+const LoginPage = lazy(() =>
+  import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
+);
+
+// ── App pages (lazy) ──────────────────────────────────────
+const DashboardPage = lazy(() =>
+  import('@/features/dashboard').then((m) => ({ default: m.DashboardPage })),
+);
+const DuAnListPage = lazy(() =>
+  import('@/features/du-an').then((m) => ({ default: m.DuAnListPage })),
+);
+const DuAnDetailPage = lazy(() =>
+  import('@/features/du-an').then((m) => ({ default: m.DuAnDetailPage })),
+);
+const KeHoachVonListPage = lazy(() =>
+  import('@/features/ke-hoach-von').then((m) => ({ default: m.KeHoachVonListPage })),
+);
+const GiaiNganListPage = lazy(() =>
+  import('@/features/giai-ngan').then((m) => ({ default: m.GiaiNganListPage })),
+);
+const HopDongListPage = lazy(() =>
+  import('@/features/hop-dong').then((m) => ({ default: m.HopDongListPage })),
+);
+const HopDongDetailPage = lazy(() =>
+  import('@/features/hop-dong').then((m) => ({ default: m.HopDongDetailPage })),
+);
+const NhaThauListPage = lazy(() =>
+  import('@/features/nha-thau').then((m) => ({ default: m.NhaThauListPage })),
+);
+const BaoCaoPage = lazy(() =>
+  import('@/features/bao-cao').then((m) => ({ default: m.BaoCaoPage })),
+);
+const NguoiDungListPage = lazy(() =>
+  import('@/features/nguoi-dung').then((m) => ({ default: m.NguoiDungListPage })),
+);
+const DanhMucPage = lazy(() =>
+  import('@/features/danh-muc').then((m) => ({ default: m.DanhMucPage })),
+);
+
+// ── Router definition ─────────────────────────────────────
+export const router = createBrowserRouter([
+  // Auth routes (không yêu cầu đăng nhập)
+  {
+    element: <AuthLayout />,
+    children: [
+      {
+        path: '/login',
+        element: withSuspense(LoginPage, 'auth'),
+      },
+    ],
+  },
+
+  // Protected routes (yêu cầu đăng nhập)
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to="/dashboard" replace /> },
+          { path: '/dashboard', element: withSuspense(DashboardPage) },
+          { path: '/du-an', element: withSuspense(DuAnListPage) },
+          { path: '/du-an/:id', element: withSuspense(DuAnDetailPage) },
+          { path: '/ke-hoach-von', element: withSuspense(KeHoachVonListPage) },
+          { path: '/giai-ngan', element: withSuspense(GiaiNganListPage) },
+          { path: '/hop-dong', element: withSuspense(HopDongListPage) },
+          { path: '/hop-dong/:id', element: withSuspense(HopDongDetailPage) },
+          { path: '/nha-thau', element: withSuspense(NhaThauListPage) },
+          { path: '/bao-cao', element: withSuspense(BaoCaoPage) },
+          { path: '/nguoi-dung', element: withSuspense(NguoiDungListPage) },
+          { path: '/danh-muc', element: withSuspense(DanhMucPage) },
+        ],
+      },
+    ],
+  },
+
+  // 404
+  {
+    path: '*',
+    element: (
+      <div className="flex h-screen flex-col items-center justify-center gap-4">
+        <h1 className="text-4xl font-bold text-muted-foreground">404</h1>
+        <p className="text-muted-foreground">Trang không tồn tại</p>
+        <a href="/dashboard" className="text-primary underline">
+          Về trang chủ
+        </a>
+      </div>
+    ),
+  },
+]);
