@@ -43,7 +43,10 @@ const NguoiDungListPage = lazy(() =>
   import('@/features/nguoi-dung').then((m) => ({ default: m.NguoiDungListPage })),
 );
 const DanhMucPage = lazy(() =>
-  import('@/features/danh-muc').then((m) => ({ default: m.DanhMucPage })),
+  import('@/features/danh-muc/pages/DanhMucPage').then((m) => ({ default: m.DanhMucPage })),
+);
+const NhaThauPage = lazy(() =>
+  import('@/features/danh-muc/pages/NhaThauPage').then((m) => ({ default: m.NhaThauPage })),
 );
 
 // ── Router definition ─────────────────────────────────────
@@ -71,7 +74,7 @@ export const router = createBrowserRouter([
 
           // Danh mục
           { path: '/danh-muc', element: withSuspense(DanhMucPage) },
-          { path: '/danh-muc/nha-thau', element: <PlaceholderPage title="Danh mục nhà thầu" /> },
+          { path: '/danh-muc/nha-thau', element: withSuspense(NhaThauPage) },
           { path: '/danh-muc/dia-ban', element: <PlaceholderPage title="Danh mục địa bàn" /> },
           { path: '/danh-muc/du-an-dau-tu', element: <PlaceholderPage title="Danh mục dự án đầu tư" /> },
           { path: '/danh-muc/nha-dau-tu-tckt', element: <PlaceholderPage title="Nhà đầu tư & Tổ chức kinh tế" /> },

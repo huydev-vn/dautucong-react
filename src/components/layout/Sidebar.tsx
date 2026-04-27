@@ -91,7 +91,41 @@ function getInitialOpen(pathname: string): Set<string> {
   });
   return open;
 }
+// ── LeafItem (outside Sidebar to prevent re-define on each render) ───────────
+interface LeafItemProps {
+  item: NavLeaf;
+  collapsed: boolean;
+  onExpand: () => void;
+}
 
+function LeafItem({ item, collapsed, onExpand }: LeafItemProps) {
+  return (
+    <NavLink
+      to={item.href}
+      title={collapsed ? item.label : undefined}
+      onClick={collapsed ? onExpand : undefined}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center rounded-lg text-[13px] font-medium transition-all duration-150',
+          collapsed ? 'h-10 w-10 mx-auto justify-center' : 'h-9 gap-3 px-3',
+          isActive
+            ? 'bg-white/20 text-white font-semibold'
+            : 'text-white/75 hover:bg-white/10 hover:text-white',
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <item.icon size={16} className={cn('shrink-0', isActive ? 'text-white' : 'text-white/65')} />
+          {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+          {!collapsed && isActive && (
+            <span className="ml-auto size-1.5 shrink-0 rounded-full bg-sky-300" />
+          )}
+        </>
+      )}
+    </NavLink>
+  );
+}
 // ── Component ──────────────────────────────────────────────────
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
@@ -109,34 +143,6 @@ export function Sidebar() {
       if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
-
-  function LeafItem({ item }: { item: NavLeaf }) {
-    return (
-      <NavLink
-        to={item.href}
-        title={collapsed ? item.label : undefined}
-        className={({ isActive }) =>
-          cn(
-            'flex items-center rounded-lg text-[13px] font-medium transition-all duration-150',
-            collapsed ? 'h-10 w-10 mx-auto justify-center' : 'h-9 gap-3 px-3',
-            isActive
-              ? 'bg-white/20 text-white font-semibold'
-              : 'text-white/75 hover:bg-white/10 hover:text-white',
-          )
-        }
-      >
-        {({ isActive }) => (
-          <>
-            <item.icon size={16} className={cn('shrink-0', isActive ? 'text-white' : 'text-white/65')} />
-            {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
-            {!collapsed && isActive && (
-              <span className="ml-auto size-1.5 shrink-0 rounded-full bg-sky-300" />
-            )}
-          </>
-        )}
-      </NavLink>
-    );
-  }
 
   return (
     <aside
@@ -171,7 +177,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 space-y-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV.map((entry) => {
           if (entry.kind === 'leaf') {
-            return <LeafItem key={entry.href} item={entry} />;
+            return <LeafItem key={entry.href} item={entry} collapsed={collapsed} onExpand={toggle} />;
           }
 
           const isAnyChildActive = entry.children.some((c) =>
@@ -182,7 +188,14 @@ export function Sidebar() {
           return (
             <div key={entry.id}>
               <button
-                onClick={() => !collapsed && toggleGroup(entry.id)}
+              onClick={() => {
+                if (collapsed) {
+                  toggle();
+                  setOpenGroups((prev) => { const next = new Set(prev); next.add(entry.id); return next; });
+                } else {
+                  toggleGroup(entry.id);
+                }
+              }}
                 title={collapsed ? entry.label : undefined}
                 className={cn(
                   'w-full flex items-center rounded-lg text-[13px] font-medium transition-all duration-150',
@@ -236,7 +249,7 @@ export function Sidebar() {
         <div className="my-2 mx-1 h-px bg-white/[0.10]" />
 
         {BOTTOM_NAV.map((item) => (
-          <LeafItem key={item.href} item={item} />
+          <LeafItem key={item.href} item={item} collapsed={collapsed} onExpand={toggle} />
         ))}
       </nav>
 

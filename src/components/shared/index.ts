@@ -4,3 +4,6 @@ export { EmptyState } from './EmptyState';
 export { StatusBadge } from './StatusBadge';
 export { ConfirmDialog } from './ConfirmDialog';
 export { SkeletonTable, SkeletonCard, SkeletonDetailPage, SkeletonTheme } from './Skeletons';
+export { DataTable } from './DataTable';
+export { ListPageShell } from './ListPageShell';
+export type { DataTableProps } from './DataTable';

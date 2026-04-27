@@ -26,57 +26,17 @@ export function useTour() {
           popover: {
             title: '📌 Thanh điều hướng',
             description:
-              'Đây là menu chính của hệ thống. Nhấn vào các mục để truy cập các chức năng quản lý dự án, danh mục, báo cáo...',
+              'Menu chính để truy cập tất cả chức năng: danh mục, dự án, báo cáo, thanh tra... Có thể thu gọn để tạo thêm không gian làm việc bằng nút ở đáy menu.',
             side: 'right',
-            align: 'start',
-          },
-        },
-        {
-          element: '[data-tour="sidebar-collapse"]',
-          popover: {
-            title: '⇔ Thu gọn / Mở rộng',
-            description:
-              'Nhấn nút này để thu gọn sidebar, tạo thêm không gian làm việc. Nhấn lại để mở rộng.',
-            side: 'right',
-            align: 'center',
-          },
-        },
-        {
-          element: '[data-tour="sidebar-trigger"]',
-          popover: {
-            title: '⬡ Nút toggle nhanh',
-            description:
-              'Ngoài nút ở đáy, bạn có thể dùng nút tròn này ở đường biên để thu gọn/mở rộng nhanh hơn.',
-            side: 'right',
-            align: 'center',
-          },
-        },
-        {
-          element: '[data-tour="header-title"]',
-          popover: {
-            title: '🏛 Hệ thống Quản lý Đầu tư Công',
-            description:
-              'Hệ thống thuộc Sở Tài Chính Bắc Ninh, phục vụ theo dõi và quản lý các dự án đầu tư công trên địa bàn tỉnh.',
-            side: 'bottom',
             align: 'start',
           },
         },
         {
           element: '[data-tour="header-notification"]',
           popover: {
-            title: '🔔 Thông báo',
+            title: '🔔 Thông báo & Tài khoản',
             description:
-              'Xem các cảnh báo và thông báo về tiến độ, hạn thanh toán, và các sự kiện quan trọng của dự án.',
-            side: 'bottom',
-            align: 'end',
-          },
-        },
-        {
-          element: '[data-tour="header-user"]',
-          popover: {
-            title: '👤 Thông tin người dùng',
-            description:
-              'Hiển thị tài khoản đang đăng nhập. Quyền truy cập được kiểm soát theo vai trò (phân quyền).',
+              'Xem cảnh báo tiến độ, hạn thanh toán. Thông tin tài khoản đăng nhập và phân quyền hiển thị ở góc phải header.',
             side: 'bottom',
             align: 'end',
           },
@@ -84,9 +44,9 @@ export function useTour() {
         {
           element: '[data-tour="kpi-cards"]',
           popover: {
-            title: '📊 Chỉ số tổng hợp',
+            title: '📊 Chỉ số tổng hợp (KPI)',
             description:
-              'Các thẻ KPI hiển thị tổng quan nhanh: tổng vốn kế hoạch, đã giải ngân, số dự án, tỷ lệ hoàn thành...',
+              'Tổng quan nhanh: tổng vốn kế hoạch, đã giải ngân, số dự án đang thực hiện, tỷ lệ hoàn thành. Dữ liệu cập nhật theo thời gian thực.',
             side: 'bottom',
             align: 'start',
           },
@@ -94,9 +54,9 @@ export function useTour() {
         {
           element: '[data-tour="dashboard-tabs"]',
           popover: {
-            title: '🗂 Các tab phân tích',
+            title: '🗂 Góc nhìn phân tích',
             description:
-              'Chuyển giữa 4 góc nhìn: Tổng quan, Tài chính, Dự án, và Cảnh báo rủi ro.',
+              'Chuyển giữa 4 tab: Tổng quan (biểu đồ chính) · Tài chính (so sánh giải ngân) · Dự án (trạng thái) · Cảnh báo (rủi ro & chậm tiến độ).',
             side: 'bottom',
             align: 'start',
           },
@@ -104,9 +64,9 @@ export function useTour() {
         {
           element: '[data-tour="header-guide"]',
           popover: {
-            title: '🎓 Xem lại hướng dẫn',
+            title: '🎓 Xem lại hướng dẫn bất kỳ lúc nào',
             description:
-              'Bạn có thể xem lại hướng dẫn bất kỳ lúc nào bằng cách nhấn nút "Hướng dẫn" này.',
+              'Nhấn nút này để chạy lại tour hướng dẫn khi cần. Bạn đã sẵn sàng sử dụng hệ thống!',
             side: 'bottom',
             align: 'end',
           },

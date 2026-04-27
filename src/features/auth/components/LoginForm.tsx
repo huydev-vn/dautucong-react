@@ -8,7 +8,7 @@ import { Eye, EyeOff, Lock, LogIn, User } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Vui lòng nhập tên đăng nhập'),
+  username: z.string().trim().min(1, 'Vui lòng nhập tên đăng nhập'),
   password: z.string().min(6, 'Mật khẩu tối thiểu 6 ký tự'),
   remember: z.boolean().optional(),
 });

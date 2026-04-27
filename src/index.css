@@ -147,45 +147,55 @@
   border: 1px solid rgba(26, 60, 110, 0.12);
   max-width: 340px;
 }
-.dtkt-tour-popover .driver-popover-title {
+.dtkt-tour-popover.driver-popover .driver-popover-title {
   font-size: 14px;
   font-weight: 700;
   color: #1a3c6e;
   margin-bottom: 6px;
 }
-.dtkt-tour-popover .driver-popover-description {
+.dtkt-tour-popover.driver-popover .driver-popover-description {
   font-size: 13px;
   color: #374151;
   line-height: 1.6;
 }
-.dtkt-tour-popover .driver-popover-progress-text {
+.dtkt-tour-popover.driver-popover .driver-popover-progress-text {
   font-size: 11px;
   color: #6b7280;
 }
-.dtkt-tour-popover .driver-popover-next-btn {
-  background-color: #1a3c6e !important;
+.dtkt-tour-popover.driver-popover .driver-popover-footer {
+  margin-top: 14px;
+}
+.dtkt-tour-popover.driver-popover .driver-popover-next-btn,
+.dtkt-tour-popover.driver-popover .driver-popover-done-btn {
+  background: #1a3c6e !important;
   border: none !important;
   border-radius: 7px !important;
   font-size: 12px !important;
   font-weight: 600 !important;
   padding: 6px 14px !important;
-  color: #fff !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
 }
-.dtkt-tour-popover .driver-popover-next-btn:hover {
-  background-color: #0f2a52 !important;
+.dtkt-tour-popover.driver-popover .driver-popover-next-btn:hover,
+.dtkt-tour-popover.driver-popover .driver-popover-done-btn:hover {
+  background: #0f2a52 !important;
 }
-.dtkt-tour-popover .driver-popover-prev-btn {
+.dtkt-tour-popover.driver-popover .driver-popover-prev-btn {
   border-radius: 7px !important;
   font-size: 12px !important;
   font-weight: 500 !important;
   padding: 6px 14px !important;
   color: #1a3c6e !important;
-  border-color: rgba(26,60,110,0.25) !important;
+  border: 1px solid rgba(26,60,110,0.3) !important;
+  background: transparent !important;
+  opacity: 1 !important;
 }
-.dtkt-tour-popover .driver-popover-close-btn {
+.dtkt-tour-popover.driver-popover .driver-popover-close-btn {
   color: #9ca3af !important;
+  opacity: 1 !important;
 }
-.dtkt-tour-popover .driver-popover-close-btn:hover {
+.dtkt-tour-popover.driver-popover .driver-popover-close-btn:hover {
   color: #1a3c6e !important;
 }
 .driver-overlay {

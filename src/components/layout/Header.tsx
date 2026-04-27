@@ -1,9 +1,9 @@
-import logo from '@/assets/logo.png';
-import { useNavigate } from 'react-router-dom';
-import { LogOut, Bell, User, Home, BookOpen } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuth } from '@/features/auth';
-import { useTour } from '@/hooks/useTour';
+import logo from "@/assets/logo.png";
+import { useNavigate } from "react-router-dom";
+import { LogOut, Bell, User, Home, BookOpen } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/features/auth";
+import { useTour } from "@/hooks/useTour";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -12,13 +12,12 @@ export function Header() {
 
   const handleLogout = () => {
     logout();
-    toast.success('Đã đăng xuất');
-    navigate('/login');
+    toast.success("Đã đăng xuất");
+    navigate("/login");
   };
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#1a3c6e]/15 bg-white px-4 shadow-[0_1px_6px_0_rgba(26,60,110,0.10)]">
-
       {/* ── Trái: logo + tiêu đề hệ thống ── */}
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1a3c6e]/8 ring-2 ring-[#1a3c6e]/15">
@@ -26,18 +25,22 @@ export function Header() {
         </div>
         <div className="hidden sm:block min-w-0" data-tour="header-title">
           <h1 className="text-base font-extrabold uppercase tracking-widest text-[#1a3c6e] leading-tight truncate">
-            Hệ thống Quản lý Đầu tư Công
+            Hệ thống Quản lý Đầu tư trong ngân sách
           </h1>
-          <p className="text-[12px] font-medium text-[#1a3c6e]/60 leading-tight tracking-wide">Sở Tài Chính Bắc Ninh</p>
+          <p className="mt-1 text-[12px] font-medium text-[#1a3c6e]/60 leading-tight tracking-wide">
+            Sở Tài Chính Bắc Ninh
+          </p>
         </div>
       </div>
 
       {/* ── Phải: thông tin + hành động ── */}
       <div className="flex items-center gap-1">
-
         {/* Tên người dùng – chỉ hiện ≥ md */}
         {user && (
-          <div data-tour="header-user" className="hidden md:flex items-center gap-2 rounded-lg bg-[#1a3c6e]/6 border border-[#1a3c6e]/12 px-3 py-1.5 mr-1">
+          <div
+            data-tour="header-user"
+            className="hidden md:flex items-center gap-2 rounded-lg bg-[#1a3c6e]/6 border border-[#1a3c6e]/12 px-3 py-1.5 mr-1"
+          >
             <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#1a3c6e] text-white">
               <User size={12} />
             </div>
@@ -46,7 +49,7 @@ export function Header() {
                 {user.TenDaiDien || user.TenDangNhap}
               </p>
               <p className="text-[10px] text-[#1a3c6e]/50 leading-tight">
-                {user.MaDonVi ? `Đơn vị #${user.MaDonVi}` : 'Người dùng'}
+                {user.MaDonVi ? `Đơn vị #${user.MaDonVi}` : "Người dùng"}
               </p>
             </div>
           </div>
@@ -76,7 +79,7 @@ export function Header() {
 
         {/* Trang chủ */}
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate("/dashboard")}
           className="flex size-9 items-center justify-center rounded-lg text-[#1a3c6e]/50 hover:bg-[#1a3c6e]/8 hover:text-[#1a3c6e] transition-colors"
           title="Trang chủ"
         >
