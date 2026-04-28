@@ -7,13 +7,17 @@ interface Props {
 
 export function PlaceholderPage({ title, description }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center h-[60vh] gap-5">
-      <div className="rounded-2xl bg-blue-50 p-6 ring-1 ring-blue-100">
-        <Construction size={40} className="text-blue-400" />
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 p-8">
+      <div className="flex size-20 items-center justify-center rounded-2xl bg-[#1a3c6e]/6 text-[#1a3c6e]/30">
+        <Construction size={40} strokeWidth={1.5} />
       </div>
+
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
-        <p className="mt-1 text-sm text-gray-400 max-w-sm">
+        <p className="text-[72px] font-extrabold leading-none tracking-tight text-[#1a3c6e]/8 select-none">
+          WIP
+        </p>
+        <h2 className="mt-1 text-lg font-bold text-gray-800">{title}</h2>
+        <p className="mt-1 text-sm text-gray-500 max-w-sm">
           {description ?? 'Tính năng đang được phát triển. Vui lòng quay lại sau.'}
         </p>
       </div>

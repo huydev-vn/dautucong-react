@@ -231,7 +231,7 @@ export function DataTable<TData>({
         <div className="flex items-center justify-between px-1 text-[12px] text-gray-500">
           {/* Left: chọn số dòng/trang */}
           <div className="flex items-center gap-1.5">
-            <span>Hiển thị</span>
+            <span>Hiển thị:</span>
             <select
               value={pageSize}
               onChange={(e) => table.setPageSize(Number(e.target.value))}

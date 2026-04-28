@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, Lock, LogIn, User } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { parseApiError } from '@/lib/parseApiError';
 
 const loginSchema = z.object({
   username: z.string().trim().min(1, 'Vui lòng nhập tên đăng nhập'),
@@ -36,8 +37,8 @@ export function LoginForm() {
       await login(values);
       toast.success('Đăng nhập thành công!');
       navigate('/dashboard');
-    } catch {
-      toast.error('Tên đăng nhập hoặc mật khẩu không đúng');
+    } catch (err) {
+      toast.error(parseApiError(err));
     } finally {
       setLoading(false);
     }

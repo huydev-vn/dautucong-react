@@ -6,4 +6,6 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { SkeletonTable, SkeletonCard, SkeletonDetailPage, SkeletonTheme } from './Skeletons';
 export { DataTable } from './DataTable';
 export { ListPageShell } from './ListPageShell';
+export { NotFoundPage } from './NotFoundPage';
+export { ErrorBoundary } from './ErrorBoundary';
 export type { DataTableProps } from './DataTable';

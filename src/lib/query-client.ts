@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { parseApiError } from '@/lib/parseApiError';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,9 +12,7 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       onError: (error) => {
-        const message =
-          error instanceof Error ? error.message : 'Đã xảy ra lỗi, vui lòng thử lại.';
-        toast.error(message);
+        toast.error(parseApiError(error));
       },
     },
   },

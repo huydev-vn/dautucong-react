@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
@@ -79,6 +80,7 @@ axiosInstance.interceptors.response.use(
     } catch {
       processQueue(new Error('Session expired'), null);
       localStorage.removeItem('access_token');
+      toast.error('Phiên làm việc đã hết hạn, vui lòng đăng nhập lại.');
       window.location.href = '/login';
       return Promise.reject(error);
     } finally {

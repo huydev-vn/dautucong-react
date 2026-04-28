@@ -5,6 +5,7 @@ import { AuthLayout } from '@/components/layout/AuthLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 import { withSuspense } from './PageLoader';
 import { PlaceholderPage } from '@/components/shared/PlaceholderPage';
+import { NotFoundPage } from '@/components/shared/NotFoundPage';
 
 // ── Auth pages ────────────────────────────────────────────
 const LoginPage = lazy(() =>
@@ -104,14 +105,6 @@ export const router = createBrowserRouter([
   // 404
   {
     path: '*',
-    element: (
-      <div className="flex h-screen flex-col items-center justify-center gap-4">
-        <h1 className="text-4xl font-bold text-muted-foreground">404</h1>
-        <p className="text-muted-foreground">Trang không tồn tại</p>
-        <a href="/dashboard" className="text-primary underline">
-          Về trang chủ
-        </a>
-      </div>
-    ),
+    element: <NotFoundPage />,
   },
 ]);
