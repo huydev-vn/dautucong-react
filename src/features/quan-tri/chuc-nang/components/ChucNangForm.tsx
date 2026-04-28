@@ -2,8 +2,19 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import type { ChucNang, ChucNangFormValues } from '../types/chuc-nang.types';
 
 // ── Validation schema ──────────────────────────────────────────
@@ -28,7 +39,7 @@ interface ChucNangFormProps {
   onClose: () => void;
 }
 
-// ── Field helper ───────────────────────────────────────────────
+// ── Field helper — uses shadcn Label ──────────────────────────
 function Field({
   label,
   required,
@@ -41,19 +52,20 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-[12px] font-medium text-gray-700">
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-[12px] font-medium text-gray-700">
         {label}
         {required && <span className="ml-0.5 text-red-500">*</span>}
-      </label>
+      </Label>
       {children}
       {error && <p className="text-[11px] text-red-500">{error}</p>}
     </div>
   );
 }
 
-const inputCls =
-  'h-8 w-full rounded-lg border border-gray-200 px-3 text-[12.5px] text-gray-800 placeholder:text-gray-400 transition-all focus:border-[#1a3c6e]/40 focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]/12';
+// shared className for native select (RHF register — cannot use Radix Select)
+const selectCls =
+  'h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 text-[12.5px] text-gray-800 transition-colors focus:border-[#1a3c6e]/40 focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]/12 disabled:cursor-not-allowed disabled:opacity-50';
 
 // ── Component ──────────────────────────────────────────────────
 export function ChucNangForm({ open, editItem, parentOptions, loading = false, onSubmit, onClose }: ChucNangFormProps) {
@@ -91,51 +103,67 @@ export function ChucNangForm({ open, editItem, parentOptions, loading = false, o
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div
-        className="flex w-full max-w-lg flex-col rounded-xl bg-white shadow-xl"
-        role="dialog"
-        aria-modal="true"
-      >
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg gap-0 p-0" showCloseButton={false}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <h2 className="text-[15px] font-semibold text-[#1a3c6e]">
+        <DialogHeader className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
+          <DialogTitle className="text-[15px] font-semibold text-[#1a3c6e]">
             {editItem ? 'Cập nhật chức năng' : 'Thêm chức năng mới'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="flex size-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-          >
-            <X size={15} />
-          </button>
-        </div>
+          </DialogTitle>
+          <DialogClose asChild>
+            <button className="flex size-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+              <span aria-hidden className="text-[16px] leading-none">✕</span>
+            </button>
+          </DialogClose>
+        </DialogHeader>
 
         {/* Body */}
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 overflow-y-auto px-5 py-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="Mã chức năng" required error={errors.ma?.message}>
-              <input {...register('ma')} placeholder="VD: QUAN_LY_DU_AN" className={inputCls} />
+              <Input
+                {...register('ma')}
+                placeholder="VD: QUAN_LY_DU_AN"
+                className={cn('text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12')}
+              />
             </Field>
             <Field label="Thứ tự sắp xếp" error={errors.sapXep?.message}>
-              <input {...register('sapXep')} type="number" placeholder="VD: 1" className={inputCls} />
+              <Input
+                {...register('sapXep')}
+                type="number"
+                placeholder="VD: 1"
+                className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
+              />
             </Field>
           </div>
 
           <Field label="Tên chức năng" required error={errors.ten?.message}>
-            <input {...register('ten')} placeholder="VD: Quản lý dự án đầu tư" className={inputCls} />
+            <Input
+              {...register('ten')}
+              placeholder="VD: Quản lý dự án đầu tư"
+              className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
+            />
           </Field>
 
           <Field label="URL" error={errors.url?.message}>
-            <input {...register('url')} placeholder="VD: /du-an" className={inputCls} />
+            <Input
+              {...register('url')}
+              placeholder="VD: /du-an"
+              className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
+            />
           </Field>
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Icon" error={errors.icon?.message}>
-              <input {...register('icon')} placeholder="VD: Building2" className={inputCls} />
+              <Input
+                {...register('icon')}
+                placeholder="VD: Building2"
+                className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
+              />
             </Field>
 
             <Field label="Chức năng cha" error={errors.idCha?.message}>
-              <select {...register('idCha')} className={`${inputCls} cursor-pointer bg-white`}>
+              <select {...register('idCha')} className={selectCls}>
                 <option value="">— Không có —</option>
                 {parentOptions
                   .filter((p) => p.Id !== editItem?.Id)
@@ -149,16 +177,16 @@ export function ChucNangForm({ open, editItem, parentOptions, loading = false, o
           </div>
 
           <Field label="Ghi chú" error={errors.ghiChu?.message}>
-            <textarea
+            <Textarea
               {...register('ghiChu')}
               rows={3}
               placeholder="Mô tả thêm..."
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-[12.5px] text-gray-800 placeholder:text-gray-400 transition-all focus:border-[#1a3c6e]/40 focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]/12 resize-none"
+              className="resize-none text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
             />
           </Field>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-3">
+          {/* Footer inside form so submit works */}
+          <DialogFooter className="pt-1">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Hủy
             </Button>
@@ -174,9 +202,9 @@ export function ChucNangForm({ open, editItem, parentOptions, loading = false, o
                 'Thêm mới'
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
