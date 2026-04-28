@@ -10,7 +10,7 @@ import {
   CheckSquare,
   Shield,
   BarChart3,
-  UserCog,
+  Settings2,
   ChevronDown,
   Layers,
   User,
@@ -21,6 +21,11 @@ import {
   FileText,
   PanelLeftClose,
   PanelLeftOpen,
+  LayoutList,
+  Users,
+  KeyRound,
+  UsersRound,
+  ScanEye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui.store';
@@ -75,11 +80,21 @@ const NAV: NavEntry[] = [
   { kind: 'leaf', label: 'Kết quả thực hiện dự án',   href: '/ket-qua-du-an',      icon: CheckSquare },
   { kind: 'leaf', label: 'Quản lý thanh tra, KT',     href: '/thanh-tra-kiem-tra', icon: Shield      },
   { kind: 'leaf', label: 'Báo cáo',                   href: '/bao-cao',            icon: BarChart3   },
+  {
+    kind: 'parent',
+    id: 'quan-tri',
+    label: 'Quản trị hệ thống',
+    icon: Settings2,
+    children: [
+      { label: 'Quản lý chức năng',         href: '/quan-tri/chuc-nang',            icon: LayoutList },
+      { label: 'Quản lý người dùng',         href: '/nguoi-dung',                    icon: Users      },
+      { label: 'Phân quyền chức năng',       href: '/quan-tri/phan-quyen-chuc-nang',  icon: KeyRound   },
+      { label: 'Quản lý nhóm người dùng',   href: '/quan-tri/nhom-nguoi-dung',      icon: UsersRound },
+      { label: 'Phân quyền giám sát dự án', href: '/quan-tri/phan-quyen-giam-sat',  icon: ScanEye    },
+    ],
+  },
 ];
 
-const BOTTOM_NAV: NavLeaf[] = [
-  { kind: 'leaf', label: 'Người dùng', href: '/nguoi-dung', icon: UserCog },
-];
 
 // ── Helpers ────────────────────────────────────────────────────
 function getInitialOpen(pathname: string): Set<string> {
@@ -212,7 +227,7 @@ export function Sidebar() {
                     <ChevronDown
                       size={13}
                       className={cn(
-                        'shrink-0 transition-transform duration-200',
+                        'shrink-0 transition-transform duration-300 ease-in-out',
                         isOpen && 'rotate-180',
                       )}
                     />
@@ -221,7 +236,7 @@ export function Sidebar() {
               </button>
 
               {isOpen && (
-                <ul className="mt-0.5 ml-3 space-y-0.5 border-l border-sky-400/30 pl-3">
+                <ul className="mt-0.5 ml-3 space-y-0.5 border-l border-sky-400/30 pl-3 animate-in fade-in-0 slide-in-from-top-2 duration-500 delay-75 ease-in-out">
                   {entry.children.map((child) => (
                     <li key={child.href}>
                       <NavLink
@@ -246,11 +261,6 @@ export function Sidebar() {
           );
         })}
 
-        <div className="my-2 mx-1 h-px bg-white/[0.10]" />
-
-        {BOTTOM_NAV.map((item) => (
-          <LeafItem key={item.href} item={item} collapsed={collapsed} onExpand={toggle} />
-        ))}
       </nav>
 
       {/* ── Nút thu gọn ── */}

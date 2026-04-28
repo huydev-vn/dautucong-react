@@ -29,4 +29,5 @@ export const QUERY_KEYS = {
   DASHBOARD: 'dashboard',
   NGUOI_DUNG: 'nguoi-dung',
   DANH_MUC: 'danh-muc',
+  CHUC_NANG: 'chuc-nang',
 } as const;

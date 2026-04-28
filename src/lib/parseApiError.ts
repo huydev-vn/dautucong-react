@@ -58,7 +58,7 @@ export function parseApiError(error: unknown): string {
     case 500:
     case 502:
     case 503:
-      return 'Lỗi máy chủ nội bộ, vui lòng thử lại sau';
+      return serverMsg ?? 'Lỗi máy chủ nội bộ, vui lòng thử lại sau';
     default:
       return serverMsg ?? `Lỗi không xác định (${status})`;
   }
