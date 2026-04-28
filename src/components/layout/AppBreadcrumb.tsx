@@ -1,5 +1,14 @@
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
+import { Home } from 'lucide-react';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 /** Map path segment → nhãn tiếng Việt */
 const SEGMENT_LABELS: Record<string, string> = {
@@ -53,33 +62,44 @@ export function AppBreadcrumb() {
   if (crumbs.length <= 1) return null;
 
   return (
-    <nav
-      aria-label="Breadcrumb"
-      className="flex h-8 shrink-0 items-center border-b border-[#1a3c6e]/8 bg-[#f8fafc] px-6"
-    >
-      <Link
-        to="/dashboard"
-        title="Trang chủ"
-        className="flex items-center text-[#1a3c6e]/35 transition-colors hover:text-[#1a3c6e]"
-      >
-        <Home size={13} />
-      </Link>
+    <div className="flex h-8 shrink-0 items-center border-b border-[#1a3c6e]/8 bg-[#f8fafc] px-6">
+      <Breadcrumb>
+        <BreadcrumbList className="flex-nowrap gap-0 text-[12px]">
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link
+                to="/dashboard"
+                title="Trang chủ"
+                className="flex items-center text-[#1a3c6e]/40 transition-colors hover:text-[#1a3c6e]"
+              >
+                <Home size={13} />
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
 
-      {crumbs.map((crumb) => (
-        <span key={crumb.path} className="flex items-center">
-          <ChevronRight size={13} className="mx-1.5 text-gray-300" />
-          {crumb.isLast ? (
-            <span className="text-[12px] font-semibold text-[#1a3c6e]">{crumb.label}</span>
-          ) : (
-            <Link
-              to={crumb.path}
-              className="text-[12px] text-gray-400 transition-colors hover:text-[#1a3c6e]"
-            >
-              {crumb.label}
-            </Link>
-          )}
-        </span>
-      ))}
-    </nav>
+          {crumbs.map((crumb) => (
+            <React.Fragment key={crumb.path}>
+              <BreadcrumbSeparator className="mx-0.5 text-gray-300" />
+              <BreadcrumbItem>
+                {crumb.isLast ? (
+                  <BreadcrumbPage className="text-[12px] font-semibold text-[#1a3c6e]">
+                    {crumb.label}
+                  </BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link
+                      to={crumb.path}
+                      className="text-[12px] text-gray-400 transition-colors hover:text-[#1a3c6e]"
+                    >
+                      {crumb.label}
+                    </Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </React.Fragment>
+          ))}
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
   );
 }

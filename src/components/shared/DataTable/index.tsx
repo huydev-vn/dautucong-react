@@ -12,6 +12,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 // ── Module augmentation — thêm meta cho column ────────────────
 declare module '@tanstack/react-table' {
@@ -58,7 +59,7 @@ function SkeletonRows({ rows, cols }: { rows: number; cols: number }) {
   );
 }
 
-// ── Pagination button ─────────────────────────────────────────
+// ── Pagination button (wraps shadcn Button) ───────────────────
 function PBtn({
   onClick,
   disabled,
@@ -71,14 +72,16 @@ function PBtn({
   title?: string;
 }) {
   return (
-    <button
+    <Button
+      variant="outline"
+      size="icon-sm"
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className="flex size-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 transition-all hover:border-[#1a3c6e]/30 hover:bg-[#1a3c6e]/6 hover:text-[#1a3c6e] disabled:cursor-not-allowed disabled:opacity-35"
+      className="border-gray-200 text-gray-400 hover:border-[#1a3c6e]/30 hover:bg-[#1a3c6e]/6 hover:text-[#1a3c6e] disabled:opacity-35"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

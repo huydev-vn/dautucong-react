@@ -13,7 +13,7 @@ import {
   Settings2,
   ChevronDown,
   Layers,
-  User,
+  // User,
   FolderOpen,
   Landmark,
   CalendarDays,
@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui.store';
-import { useAuth } from '@/features/auth';
+// import { useAuth } from '@/features/auth';
 
 // ── Types ──────────────────────────────────────────────────────
 interface NavLeaf {
@@ -145,7 +145,7 @@ function LeafItem({ item, collapsed, onExpand }: LeafItemProps) {
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggle    = useUIStore((s) => s.toggleSidebar);
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const location = useLocation();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(() =>
@@ -280,7 +280,7 @@ export function Sidebar() {
       </div>
 
       {/* ── Người dùng ── */}
-      {user && (
+      {/* {user && (
         <div
           className={cn(
             'shrink-0 border-t border-white/[0.12] px-3 py-3',
@@ -310,7 +310,7 @@ export function Sidebar() {
             </div>
           )}
         </div>
-      )}
+      )} */}
     </aside>
   );
 }

@@ -1,5 +1,13 @@
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -24,34 +32,26 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  if (!open) return null;
-
   return (
-    // Backdrop
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div
-        className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-title"
-      >
-        <div className="flex items-start gap-4">
-          <div
-            className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
-              variant === 'danger' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'
-            }`}
-          >
-            <AlertTriangle size={20} />
+    <Dialog open={open} onOpenChange={(v) => !v && onCancel()}>
+      <DialogContent className="max-w-md" showCloseButton={false}>
+        <DialogHeader>
+          <div className="flex items-start gap-4">
+            <div
+              className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+                variant === 'danger' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'
+              }`}
+            >
+              <AlertTriangle size={20} />
+            </div>
+            <div className="pt-0.5">
+              <DialogTitle className="text-[15px] font-semibold">{title}</DialogTitle>
+              <DialogDescription className="mt-1 text-[12.5px]">{description}</DialogDescription>
+            </div>
           </div>
-          <div>
-            <h3 id="confirm-title" className="font-semibold text-foreground">
-              {title}
-            </h3>
-            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-          </div>
-        </div>
+        </DialogHeader>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <DialogFooter>
           <Button variant="outline" onClick={onCancel} disabled={loading}>
             {cancelLabel}
           </Button>
@@ -69,8 +69,8 @@ export function ConfirmDialog({
               confirmLabel
             )}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
