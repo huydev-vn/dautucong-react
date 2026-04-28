@@ -17,7 +17,11 @@ const SEGMENT_LABELS: Record<string, string> = {
   'ket-qua-du-an': 'Kết quả dự án',
   'thanh-tra-kiem-tra': 'Thanh tra, kiểm tra',
   'bao-cao': 'Báo cáo',
-  'nguoi-dung': 'Người dùng',
+  'nguoi-dung': 'Quản lý người dùng',
+  // Quản trị hệ thống
+  'quan-tri': 'Quản trị hệ thống',
+  'chuc-nang': 'Quản lý chức năng',
+  'nha-thau-ql': 'Quản lý nhà thầu',
 };
 
 const DYNAMIC_SEG = /^(\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;

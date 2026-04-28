@@ -45,11 +45,8 @@ export function Header() {
               <User size={12} />
             </div>
             <div className="text-right">
-              <p className="text-[12px] font-semibold text-[#1a3c6e] leading-tight">
+              <p className="text-[13px] font-semibold text-[#1a3c6e] leading-tight">
                 {user.TenDaiDien || user.TenDangNhap}
-              </p>
-              <p className="text-[10px] text-[#1a3c6e]/50 leading-tight">
-                {user.MaDonVi ? `Đơn vị #${user.MaDonVi}` : "Người dùng"}
               </p>
             </div>
           </div>

@@ -50,7 +50,7 @@ export function LoginPage() {
       </div>
 
       {/* Copyright */}
-      <p className="mt-3 text-xs text-blue-200/60 text-center">
+      <p className="mt-3 text-xs text-white text-center">
         © {new Date().getFullYear()}. Sở Tài Chính Bắc Ninh. Bảo lưu mọi quyền.
       </p>
     </div>

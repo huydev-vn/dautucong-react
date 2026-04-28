@@ -1,17 +1,11 @@
-import { useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
   getPaginationRowModel,
   flexRender,
   type ColumnDef,
-  type SortingState,
 } from '@tanstack/react-table';
 import {
-  ArrowUp,
-  ArrowDown,
-  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -111,15 +105,11 @@ export function DataTable<TData>({
   pageSize: initialPageSize = 10,
   pageSizeOptions = [10, 20, 50, 100],
 }: DataTableProps<TData>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
-    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: initialPageSize } },
     autoResetPageIndex: true,
@@ -144,35 +134,20 @@ export function DataTable<TData>({
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id} className="border-b border-gray-200 bg-white">
                 {hg.headers.map((header) => {
-                  const canSort = header.column.getCanSort();
-                  const sorted = header.column.getIsSorted();
                   const align = header.column.columnDef.meta?.align ?? 'left';
                   return (
                     <th
                       key={header.id}
                       colSpan={header.colSpan}
-                      onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                       className={cn(
-                        'px-3 py-2.5 text-[12px] font-semibold text-[#1a3c6e] whitespace-nowrap',
+                        'px-3 py-2.5 text-[13px] font-semibold text-[#1a3c6e] whitespace-nowrap',
                         align === 'center' && 'text-center',
                         align === 'right' && 'text-right',
-                        canSort && 'cursor-pointer select-none hover:text-[#0f2a52]',
                         header.column.columnDef.meta?.className,
                       )}
                     >
                       {header.isPlaceholder ? null : (
-                        <span className="inline-flex items-center gap-1">
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                          {canSort && (
-                            sorted === 'asc' ? (
-                              <ArrowUp size={11} className="text-[#1a3c6e]" />
-                            ) : sorted === 'desc' ? (
-                              <ArrowDown size={11} className="text-[#1a3c6e]" />
-                            ) : (
-                              <ArrowUpDown size={11} className="text-gray-300" />
-                            )
-                          )}
-                        </span>
+                        flexRender(header.column.columnDef.header, header.getContext())
                       )}
                     </th>
                   );
@@ -209,7 +184,7 @@ export function DataTable<TData>({
                       <td
                         key={cell.id}
                         className={cn(
-                          'px-3 py-1.5 text-[12.5px] text-gray-700',
+                          'px-3 py-1.5 text-[12px] text-gray-700',
                           align === 'center' && 'text-center',
                           align === 'right' && 'text-right',
                           cell.column.columnDef.meta?.className,

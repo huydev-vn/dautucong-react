@@ -1,4 +1,4 @@
-export type { ApiResponse, PaginatedResponse, PaginationParams, QueryParams } from './api.types';
+export type { ApiWrapped, BaseModel, PagedResult, ApiResponse, PaginatedResponse, PaginationParams, QueryParams } from './api.types';
 export type {
   NguonVon,
   GiaiDoanDuAn,

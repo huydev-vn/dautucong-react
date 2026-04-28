@@ -10,7 +10,9 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
-      isInitialized: false,
+      // localStorage là đồng bộ → persist hydrate xong trước khi bất kỳ component nào render.
+      // Không cần delay flag này; khởi tạo true để ProtectedRoute không bao giờ bị kẹt spinner.
+      isInitialized: true,
 
       initialize: () => {
         set({ isInitialized: true });
@@ -18,6 +20,10 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (payload: LoginPayload) => {
         const res = await authApi.login(payload);
+        // Defensive check: nếu token không đúng format JWT → login thực sự thất bại
+        if (!res?.accessToken || res.accessToken.split('.').length !== 3) {
+          throw new Error(`Login response không hợp lệ. accessToken nhận được: "${res?.accessToken}"`);
+        }
         // refreshToken không lưu localStorage – backend set qua HttpOnly cookie
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, res.accessToken);
         set({

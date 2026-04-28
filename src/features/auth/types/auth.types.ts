@@ -1,3 +1,8 @@
+import type { ApiWrapped } from '@/types';
+
+// re-export để các module cũ import từ đây vẫn hoạt động
+export type { ApiWrapped };
+
 // Giữ lại để các module khác (nguoi-dung) dùng
 export type UserRole = 'admin' | 'manager' | 'editor' | 'viewer';
 
@@ -21,8 +26,10 @@ export interface LoginResponse {
   user: User;
   Menu: unknown[];
   version: string;
-  DSTacVu: unknown[];
+  DSTacVu: Record<string, unknown[]>;
 }
+
+/** LibNetCore bọc tất cả response trong wrapper này — định nghĩa của sốt trong @/types/api.types */
 
 export interface AuthState {
   user: User | null;
