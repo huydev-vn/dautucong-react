@@ -20,13 +20,42 @@ export interface LoginPayload {
   password: string;
 }
 
+/** Một tác vụ được phân quyền (HETHONG_TACVU) */
+export interface TacVuItem {
+  Ma: string;
+  Ten: string;
+  Icon: string | null;
+  Stt: number;
+  ViTri: string;
+  Style: string | null;
+}
+
+/** Một mục menu con (Children = []) */
+export interface MenuItem {
+  Id: number;
+  Ma: string;
+  Ten: string;
+  Url: string | null;
+  Icon: string | null;
+  IdCha: number;
+  SapXep: number;
+  Children: MenuItem[];
+}
+
 /** Backend trả về – refreshToken nằm trong HttpOnly cookie, không trong body */
 export interface LoginResponse {
   accessToken: string;
   user: User;
-  Menu: unknown[];
+  Menu: MenuItem[];
   version: string;
-  DSTacVu: Record<string, unknown[]>;
+  /** key = Id chức năng (string), value = danh sách tác vụ */
+  DSTacVu: Record<string, TacVuItem[]>;
+}
+
+/** Shape trả về từ GET /api/Auth/QuyenTacVu */
+export interface QuyenTacVuResponse {
+  version: string;
+  DSTacVu: Record<string, TacVuItem[]>;
 }
 
 /** LibNetCore bọc tất cả response trong wrapper này — định nghĩa của sốt trong @/types/api.types */
@@ -36,8 +65,12 @@ export interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   isInitialized: boolean;
+  menu: MenuItem[];
+  dsTacVu: Record<string, TacVuItem[]>;
+  tacVuVersion: string | null;
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
   initialize: () => void;
+  setQuyenTacVu: (version: string, dsTacVu: Record<string, TacVuItem[]>) => void;
 }

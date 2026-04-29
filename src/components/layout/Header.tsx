@@ -20,14 +20,14 @@ export function Header() {
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#1a3c6e]/15 bg-white px-4 shadow-[0_1px_6px_0_rgba(26,60,110,0.10)]">
       {/* ── Trái: logo + tiêu đề hệ thống ── */}
       <div className="flex items-center gap-3 min-w-0">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1a3c6e]/8 ring-2 ring-[#1a3c6e]/15">
-          <img src={logo} alt="Quốc huy" className="size-7 object-contain" />
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#1a3c6e]/8 ring-2 ring-[#1a3c6e]/15">
+          <img src={logo} alt="Quốc huy" className="size-9 object-contain" />
         </div>
         <div className="hidden sm:block min-w-0" data-tour="header-title">
           <h1 className="text-base font-extrabold uppercase tracking-widest text-[#1a3c6e] leading-tight truncate">
             Hệ thống Quản lý Đầu tư trong ngân sách
           </h1>
-          <p className="mt-1 text-[12px] font-medium text-[#1a3c6e]/60 leading-tight tracking-wide">
+          <p className="mt-1 text-[12px] font-medium text-[#1a3c6e]/60 leading-tight tracking-wide uppercase">
             Sở Tài Chính Bắc Ninh
           </p>
         </div>

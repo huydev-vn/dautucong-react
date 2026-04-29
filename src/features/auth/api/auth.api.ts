@@ -1,17 +1,16 @@
 import axiosInstance from '@/lib/axios';
-import type { ApiWrapped, LoginPayload, LoginResponse } from '../types/auth.types';
+import type { ApiWrapped, LoginPayload, LoginResponse, QuyenTacVuResponse } from '../types/auth.types';
 
 export const authApi = {
   /**
-   * POST /api/Auth/Login?user={username}&pass={password}
-   * Backend nhận query params, refreshToken trả về qua HttpOnly cookie.
+   * POST /api/Auth/Login
+   * Backend nhận JSON body { User, Pass }, refreshToken trả về qua HttpOnly cookie.
    */
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
     // Backend LibNetCore bọc response: { status: 200, data: LoginResponse, message: "Success" }
     const { data } = await axiosInstance.post<ApiWrapped<LoginResponse>>(
       '/Auth/Login',
-      null,
-      { params: { user: payload.username, pass: payload.password } },
+      { User: payload.username, Pass: payload.password },
     );
     return data.data;
   },
@@ -20,6 +19,8 @@ export const authApi = {
    * POST /api/Auth/HeThong_RefreshToken
    * Authorization header (expired token OK) + refreshToken cookie → new access token (string).
    * _retry: true ở config ngăn interceptor 401 gọi lại endpoint này đệ quy.
+   * Lưu ý: token refresh thực tế được xử lý bởi axios interceptor trong lib/axios.ts,
+   * hàm này chỉ dùng nếu cần gọi thủ công.
    */
   refreshToken: async (): Promise<string> => {
     // Backend LibNetCore bọc response: { status: 200, data: "eyJ...", message: "Success" }
@@ -45,12 +46,13 @@ export const authApi = {
   /**
    * GET /api/Auth/QuyenTacVu?id={userId}
    * Lấy danh sách tác vụ được phân quyền cho người dùng (dùng để cập nhật sau khi phân quyền thay đổi).
+   * Backend bọc trong ApiWrapped → cần unwrap data.data.
    */
-  getQuyenTacVu: async (userId: number): Promise<{ version: string; DSTacVu: string[] }> => {
-    const { data } = await axiosInstance.get<{ version: string; DSTacVu: string[] }>(
+  getQuyenTacVu: async (userId: number): Promise<QuyenTacVuResponse> => {
+    const { data } = await axiosInstance.get<ApiWrapped<QuyenTacVuResponse>>(
       '/Auth/QuyenTacVu',
       { params: { id: userId } },
     );
-    return data;
+    return data.data;
   },
 };

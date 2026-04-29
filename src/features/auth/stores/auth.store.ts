@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AuthState, LoginPayload } from '../types/auth.types';
+import type { AuthState, LoginPayload, TacVuItem } from '../types/auth.types';
 import { authApi } from '../api/auth.api';
 import { STORAGE_KEYS } from '@/utils/constants';
+import { tokenStore } from '@/lib/token-store';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -10,6 +11,9 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
+      menu: [],
+      dsTacVu: {},
+      tacVuVersion: null,
       // localStorage là đồng bộ → persist hydrate xong trước khi bất kỳ component nào render.
       // Không cần delay flag này; khởi tạo true để ProtectedRoute không bao giờ bị kẹt spinner.
       isInitialized: true,
@@ -25,11 +29,15 @@ export const useAuthStore = create<AuthState>()(
           throw new Error(`Login response không hợp lệ. accessToken nhận được: "${res?.accessToken}"`);
         }
         // refreshToken không lưu localStorage – backend set qua HttpOnly cookie
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, res.accessToken);
+        // accessToken lưu sessionStorage (xóa khi tab đóng, không persistent)
+        tokenStore.set(res.accessToken);
         set({
           user: res.user,
           accessToken: res.accessToken,
           isAuthenticated: true,
+          menu: res.Menu ?? [],
+          dsTacVu: res.DSTacVu ?? {},
+          tacVuVersion: res.version ?? null,
         });
       },
 
@@ -39,18 +47,25 @@ export const useAuthStore = create<AuthState>()(
         if (user?.Id) {
           authApi.logout(user.Id);
         }
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        set({ user: null, accessToken: null, isAuthenticated: false });
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN); // dọn token cũ nếu còn sót
+        tokenStore.clear();
+        set({ user: null, accessToken: null, isAuthenticated: false, menu: [], dsTacVu: {}, tacVuVersion: null });
       },
 
       setUser: (user) => set({ user }),
+
+      setQuyenTacVu: (version: string, dsTacVu: Record<string, TacVuItem[]>) =>
+        set({ tacVuVersion: version, dsTacVu }),
     }),
     {
       name: STORAGE_KEYS.USER,
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
+        // accessToken KHÔNG persist – lưu trong sessionStorage qua tokenStore
         isAuthenticated: state.isAuthenticated,
+        menu: state.menu,
+        dsTacVu: state.dsTacVu,
+        tacVuVersion: state.tacVuVersion,
       }),
       // onRehydrateStorage KHÔNG được mutate state object trực tiếp sau khi
       // useSyncExternalStore đã dispatch snapshot – sẽ gây tearing + infinite loop.
