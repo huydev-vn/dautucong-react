@@ -87,7 +87,7 @@ const NAV: NavEntry[] = [
     icon: Settings2,
     children: [
       { label: 'Quản lý chức năng',         href: '/quan-tri/chuc-nang',            icon: LayoutList },
-      { label: 'Quản lý người dùng',         href: '/nguoi-dung',                    icon: Users      },
+      { label: 'Quản lý người dùng',         href: '/quan-tri/nguoi-dung',           icon: Users      },
       { label: 'Phân quyền chức năng',       href: '/quan-tri/phan-quyen-chuc-nang',  icon: KeyRound   },
       { label: 'Quản lý nhóm người dùng',   href: '/quan-tri/nhom-nguoi-dung',      icon: UsersRound },
       { label: 'Phân quyền giám sát dự án', href: '/quan-tri/phan-quyen-giam-sat',  icon: ScanEye    },
@@ -235,8 +235,13 @@ export function Sidebar() {
                 )}
               </button>
 
-              {isOpen && (
-                <ul className="mt-0.5 ml-3 space-y-0.5 border-l border-sky-400/30 pl-3 animate-in fade-in-0 slide-in-from-top-2 duration-500 delay-75 ease-in-out">
+              <div
+                className={cn(
+                  'overflow-hidden transition-all duration-300 ease-in-out',
+                  isOpen ? 'max-h-[500px]' : 'max-h-0',
+                )}
+              >
+                <ul className="mt-0.5 ml-3 space-y-0.5 border-l border-sky-400/30 pl-3 pb-0.5">
                   {entry.children.map((child) => (
                     <li key={child.href}>
                       <NavLink
@@ -256,7 +261,7 @@ export function Sidebar() {
                     </li>
                   ))}
                 </ul>
-              )}
+              </div>
             </div>
           );
         })}

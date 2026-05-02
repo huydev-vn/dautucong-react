@@ -41,7 +41,7 @@ const BaoCaoPage = lazy(() =>
   import('@/features/bao-cao').then((m) => ({ default: m.BaoCaoPage })),
 );
 const NguoiDungListPage = lazy(() =>
-  import('@/features/nguoi-dung').then((m) => ({ default: m.NguoiDungListPage })),
+  import('@/features/quan-tri').then((m) => ({ default: m.NguoiDungListPage })),
 );
 const ChucNangListPage = lazy(() =>
   import('@/features/quan-tri').then((m) => ({ default: m.ChucNangListPage })),
@@ -99,7 +99,7 @@ export const router = createBrowserRouter([
 
           // Quản trị
           { path: '/nha-thau', element: withSuspense(NhaThauListPage) },
-          { path: '/nguoi-dung', element: withSuspense(NguoiDungListPage) },
+          { path: '/quan-tri/nguoi-dung', element: withSuspense(NguoiDungListPage) },
           { path: '/quan-tri/chuc-nang', element: withSuspense(ChucNangListPage) },
         ],
       },

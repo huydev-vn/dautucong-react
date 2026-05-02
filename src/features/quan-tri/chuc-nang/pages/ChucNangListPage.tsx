@@ -1,18 +1,17 @@
 import { useState, useMemo, useCallback } from "react";
 import {
-  Plus,
   Pencil,
   Trash2,
   Eye,
   ChevronDown,
   ChevronRight,
-  Inbox,
 } from "lucide-react";
 import { ListPageShell } from "@/components/shared/ListPageShell";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { HighlightText } from "@/components/shared/HighlightText";
+import { AddButton } from "@/components/shared/AddButton";
 import { cn } from "@/lib/utils";
-import { useDebounce } from "@/hooks/useDebounce";
 import {
   useChucNangList,
   useSaveChucNang,
@@ -28,7 +27,19 @@ interface TreeNode {
 }
 
 // ── Build tree — module level (rerender-no-inline-components) ──
-function buildTree(items: ChucNang[]): TreeNode[] {
+// Hoist helper ra ngoài render — rule 7.10 (hoist RegExp/pure function)
+function matchesSearch(item: ChucNang, q: string): boolean {
+  return item.Ma.toLowerCase().includes(q) || item.Ten.toLowerCase().includes(q);
+}
+
+/**
+ * Xây cây chức năng + lọc client-side.
+ * - Nếu cha khớp: giữ cha + toàn bộ con.
+ * - Nếu cha không khớp nhưng có con khớp: vẫn giữ cha làm ngữ cảnh + chỉ hiển thị con khớp.
+ * - Không khớp gì cả: loại nhóm.
+ */
+function buildTree(items: ChucNang[], search: string): TreeNode[] {
+  const q = search.trim().toLowerCase();
   const idSet = new Set(items.map((c) => c.Id));
   const childrenMap = new Map<number, ChucNang[]>();
 
@@ -41,14 +52,26 @@ function buildTree(items: ChucNang[]): TreeNode[] {
 
   const roots = items
     .filter((c) => !c.IdCha || !idSet.has(c.IdCha))
-    .sort((a, b) => (a.SapXep ?? 99) - (b.SapXep ?? 99));
+    .toSorted((a, b) => (a.SapXep ?? 99) - (b.SapXep ?? 99));
 
-  return roots.map((root) => ({
-    parent: root,
-    children: (childrenMap.get(root.Id) ?? []).sort(
+  return roots.flatMap((root) => {
+    const allChildren = (childrenMap.get(root.Id) ?? []).toSorted(
       (a, b) => (a.SapXep ?? 99) - (b.SapXep ?? 99),
-    ),
-  }));
+    );
+
+    if (!q) return [{ parent: root, children: allChildren }];
+
+    const parentMatches = matchesSearch(root, q);
+    const matchedChildren = allChildren.filter((c) => matchesSearch(c, q));
+
+    if (!parentMatches && matchedChildren.length === 0) return [];
+
+    return [{
+      parent: root,
+      // Cha khớp → hiển thị tất cả con; cha không khớp → chỉ hiển thị con khớp
+      children: parentMatches ? allChildren : matchedChildren,
+    }];
+  });
 }
 
 const GROUP_BADGE: Record<string, { label: string; cls: string }> = {
@@ -63,6 +86,7 @@ interface RowActionsProps {
   onEdit: (item: ChucNang) => void;
   onDelete: (item: ChucNang) => void;
 }
+
 
 function RowActions({ item, onView, onEdit, onDelete }: RowActionsProps) {
   return (
@@ -96,6 +120,7 @@ function RowActions({ item, onView, onEdit, onDelete }: RowActionsProps) {
 interface ParentRowProps {
   node: TreeNode;
   expanded: boolean;
+  highlight: string;
   onToggle: (id: number) => void;
   onView: (item: ChucNang) => void;
   onEdit: (item: ChucNang) => void;
@@ -105,6 +130,7 @@ interface ParentRowProps {
 function ParentRow({
   node,
   expanded,
+  highlight,
   onToggle,
   onView,
   onEdit,
@@ -128,15 +154,19 @@ function ParentRow({
         </button>
       </td>
       <td className="w-40 px-3 py-2.5">
-        <span className="font-mono text-[12px] text-[#1a3c6e]/80">
-          {parent.Ma}
-        </span>
+        <HighlightText
+          text={parent.Ma}
+          highlight={highlight}
+          className="font-mono text-[12px] text-[#1a3c6e]/80"
+        />
       </td>
       <td className="px-3 py-2.5">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-[13px] text-[#1a3c6e]">
-            {parent.Ten}
-          </span>
+          <HighlightText
+            text={parent.Ten}
+            highlight={highlight}
+            className="font-semibold text-[13px] text-[#1a3c6e]"
+          />
           {badge && (
             <span
               className={cn(
@@ -189,6 +219,7 @@ interface ChildRowProps {
   item: ChucNang;
   index: number;
   isLast: boolean;
+  highlight: string;
   onView: (item: ChucNang) => void;
   onEdit: (item: ChucNang) => void;
   onDelete: (item: ChucNang) => void;
@@ -198,6 +229,7 @@ function ChildRow({
   item,
   index,
   isLast,
+  highlight,
   onView,
   onEdit,
   onDelete,
@@ -213,16 +245,22 @@ function ChildRow({
         <span className="text-[11px] text-gray-400">{index + 1}</span>
       </td>
       <td className="w-40 px-3 py-1.5 pl-9">
-        <span className="font-mono text-[11.5px] text-[#1a3c6e]/70">
-          {item.Ma}
-        </span>
+        <HighlightText
+          text={item.Ma}
+          highlight={highlight}
+          className="font-mono text-[11.5px] text-[#1a3c6e]/70"
+        />
       </td>
       <td className="px-3 py-1.5">
         <div className="flex items-center gap-1.5 pl-3">
           <span className="select-none text-[12px] leading-none text-gray-300">
             └
           </span>
-          <span className="text-[12.5px] text-gray-800">{item.Ten}</span>
+          <HighlightText
+            text={item.Ten}
+            highlight={highlight}
+            className="text-[12.5px] text-gray-800"
+          />
         </div>
       </td>
       <td className="w-52 px-3 py-1.5">
@@ -291,17 +329,16 @@ function TreeSkeleton() {
 // ── Page ───────────────────────────────────────────────────────
 export function ChucNangListPage() {
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 400);
 
   const [formOpen, setFormOpen] = useState(false);
+  const [formKey, setFormKey] = useState(0);
   const [editItem, setEditItem] = useState<ChucNang | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChucNang | null>(null);
 
-  // Tree cần toàn bộ data để hiển thị đúng nhóm cha-con
+  // Luôn fetch toàn bộ, lọc client-side để giữ ngữ cảnh cha-con
   const { data, isLoading } = useChucNangList({
     pageNumber: 1,
     pageSize: 500,
-    searchText: debouncedSearch || undefined,
   });
 
   const saveMutation = useSaveChucNang();
@@ -310,8 +347,8 @@ export function ChucNangListPage() {
   const items = useMemo(() => data?.Items ?? [], [data?.Items]);
   const total = data?.Total ?? 0;
 
-  // Build tree — memoized (rerender-memo)
-  const tree = useMemo(() => buildTree(items), [items]);
+  // Build tree — memoized, lọc client-side kèm ngữ cảnh cha
+  const tree = useMemo(() => buildTree(items, search), [items, search]);
 
   // Auto-expand: derived state, không dùng useEffect (rerender-derived-state-no-effect)
   // expandedIds rỗng = chưa toggle thủ công → hiển thị tất cả mở
@@ -321,11 +358,14 @@ export function ChucNangListPage() {
     [tree],
   );
   const effectiveExpanded = useMemo<Set<number>>(
-    () =>
-      expandedIds.size === 0 && allParentIds.size > 0
+    () => {
+      // Khi đang tìm kiếm: luôn mở rộng tất cả để thấy kết quả
+      if (search) return allParentIds;
+      return expandedIds.size === 0 && allParentIds.size > 0
         ? allParentIds
-        : expandedIds,
-    [expandedIds, allParentIds],
+        : expandedIds;
+    },
+    [search, expandedIds, allParentIds],
   );
 
   const handleToggle = useCallback(
@@ -358,6 +398,7 @@ export function ChucNangListPage() {
 
   const handleOpenAdd = useCallback(() => {
     setEditItem(null);
+    setFormKey((k) => k + 1);
     setFormOpen(true);
   }, []);
 
@@ -384,34 +425,19 @@ export function ChucNangListPage() {
           value: search,
           onChange: setSearch,
           placeholder: "Tìm theo mã, tên...",
+          debounceMs: 400,
         }}
         actions={
-          <Button
-            size="sm"
-            onClick={handleOpenAdd}
-            className="h-8 gap-1.5 bg-[#1a3c6e] text-[12.5px] hover:bg-[#0f2a52]"
-          >
-            <Plus size={14} />
-            Thêm mới
-          </Button>
+          <AddButton label="Thêm mới" onClick={handleOpenAdd} />
         }
       >
         {isLoading ? (
           <TreeSkeleton />
         ) : tree.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-            <div className="flex items-center justify-center">
-              <Inbox className="w-13 h-13 text-gray-400" />
-            </div>
-
-            <p className="mt-4 text-sm font-medium text-gray-600">
-              Không có dữ liệu phù hợp
-            </p>
-
-            <p className="mt-1 text-xs text-gray-400">
-              Thử thay đổi bộ lọc hoặc tìm kiếm khác
-            </p>
-          </div>
+          <EmptyState
+            title="Không có dữ liệu phù hợp"
+            description="Thử thay đổi từ khóa tìm kiếm hoặc thêm chức năng mới."
+          />
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-[0_1px_4px_0_rgba(26,60,110,0.06)]">
             <table className="w-full text-left">
@@ -439,6 +465,7 @@ export function ChucNangListPage() {
                     key={`p-${node.parent.Id}`}
                     node={node}
                     expanded={effectiveExpanded.has(node.parent.Id)}
+                    highlight={search}
                     onToggle={handleToggle}
                     onView={handleView}
                     onEdit={handleEdit}
@@ -451,6 +478,7 @@ export function ChucNangListPage() {
                           item={child}
                           index={idx}
                           isLast={idx === node.children.length - 1}
+                          highlight={search}
                           onView={handleView}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
@@ -465,6 +493,7 @@ export function ChucNangListPage() {
       </ListPageShell>
 
       <ChucNangForm
+        key={editItem ? `edit-${editItem.Id}` : `add-${formKey}`}
         open={formOpen}
         editItem={editItem}
         parentOptions={items}

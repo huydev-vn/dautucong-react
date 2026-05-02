@@ -24,7 +24,7 @@ export function Header() {
           <img src={logo} alt="Quốc huy" className="size-9 object-contain" />
         </div>
         <div className="hidden sm:block min-w-0" data-tour="header-title">
-          <h1 className="text-base font-extrabold uppercase tracking-widest text-[#1a3c6e] leading-tight truncate">
+          <h1 className="text-base font-extrabold uppercase tracking-widest text-[#1a3c6e] leading-tight">
             Hệ thống Quản lý Đầu tư trong ngân sách
           </h1>
           <p className="mt-1 text-[12px] font-medium text-[#1a3c6e]/60 leading-tight tracking-wide uppercase">

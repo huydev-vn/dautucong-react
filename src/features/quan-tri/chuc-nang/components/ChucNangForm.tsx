@@ -1,20 +1,12 @@
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+import { FormDialog } from '@/components/shared/FormDialog';
+import { TextField } from '@/components/shared/Form/TextField';
+import { NumberField } from '@/components/shared/Form/NumberField';
+import { SelectField } from '@/components/shared/Form/SelectField';
+import { TextareaField } from '@/components/shared/Form/TextareaField';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import type { ChucNang, ChucNangFormValues } from '../types/chuc-nang.types';
 
 // ── Validation schema ──────────────────────────────────────────
@@ -29,6 +21,25 @@ const schema = z.object({
   ghiChu: z.string().max(1000, 'Tối đa 1000 ký tự').optional().or(z.literal('')),
 });
 
+// ── Helpers — module level ─────────────────────────────────────
+const EMPTY_DEFAULTS: ChucNangFormValues = {
+  id: 0, ma: '', ten: '', url: '', sapXep: undefined, icon: '', idCha: undefined, ghiChu: '',
+};
+
+function toDefaults(item: ChucNang | null): ChucNangFormValues {
+  if (!item) return EMPTY_DEFAULTS;
+  return {
+    id: item.Id,
+    ma: item.Ma,
+    ten: item.Ten,
+    url: item.Url ?? '',
+    sapXep: item.SapXep,
+    icon: item.Icon ?? '',
+    idCha: item.IdCha,
+    ghiChu: item.GhiChu ?? '',
+  };
+}
+
 // ── Props ──────────────────────────────────────────────────────
 interface ChucNangFormProps {
   open: boolean;
@@ -39,172 +50,99 @@ interface ChucNangFormProps {
   onClose: () => void;
 }
 
-// ── Field helper — uses shadcn Label ──────────────────────────
-function Field({
-  label,
-  required,
-  error,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="text-[12px] font-medium text-gray-700">
-        {label}
-        {required && <span className="ml-0.5 text-red-500">*</span>}
-      </Label>
-      {children}
-      {error && <p className="text-[11px] text-red-500">{error}</p>}
-    </div>
-  );
-}
-
-// shared className for native select (RHF register — cannot use Radix Select)
-const selectCls =
-  'h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 text-[12.5px] text-gray-800 transition-colors focus:border-[#1a3c6e]/40 focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]/12 disabled:cursor-not-allowed disabled:opacity-50';
-
 // ── Component ──────────────────────────────────────────────────
-export function ChucNangForm({ open, editItem, parentOptions, loading = false, onSubmit, onClose }: ChucNangFormProps) {
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ChucNangFormValues>({
+// key={editItem?.Id ?? 'new'} đặt ở parent → remount tự động reset form,
+// không cần useEffect để sync editItem → defaultValues
+export function ChucNangForm({
+  open,
+  editItem,
+  parentOptions,
+  loading = false,
+  onSubmit,
+  onClose,
+}: ChucNangFormProps) {
+  const form = useForm<ChucNangFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema) as any,
-    defaultValues: { id: 0, ma: '', ten: '', url: '', sapXep: undefined, icon: '', idCha: undefined, ghiChu: '' },
+    defaultValues: toDefaults(editItem),
   });
 
-  // Reset form mỗi khi mở với dữ liệu mới
-  useEffect(() => {
-    if (!open) return;
-    reset(
-      editItem
-        ? {
-            id: editItem.Id,
-            ma: editItem.Ma,
-            ten: editItem.Ten,
-            url: editItem.Url ?? '',
-            sapXep: editItem.SapXep,
-            icon: editItem.Icon ?? '',
-            idCha: editItem.IdCha,
-            ghiChu: editItem.GhiChu ?? '',
-          }
-        : { id: 0, ma: '', ten: '', url: '', sapXep: undefined, icon: '', idCha: undefined, ghiChu: '' },
-    );
-  }, [open, editItem, reset]);
+  const parentOpts = parentOptions
+    .filter((p) => p.Id !== editItem?.Id)
+    .map((p) => ({ value: p.Id, label: p.Ten }));
 
-  if (!open) return null;
+  const { guardedClose, DiscardDialog } = useUnsavedChanges(form.formState.isDirty, onClose);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg gap-0 p-0" showCloseButton={false}>
-        {/* Header */}
-        <DialogHeader className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
-          <DialogTitle className="text-[15px] font-semibold text-[#1a3c6e]">
-            {editItem ? 'Cập nhật chức năng' : 'Thêm chức năng mới'}
-          </DialogTitle>
-          <DialogClose asChild>
-            <button className="flex size-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
-              <span aria-hidden className="text-[16px] leading-none">✕</span>
-            </button>
-          </DialogClose>
-        </DialogHeader>
+    <>
+      <FormDialog
+        open={open}
+        onClose={guardedClose}
+        onSubmit={form.handleSubmit(onSubmit)}
+        loading={loading}
+        title={editItem ? 'Cập nhật chức năng' : 'Thêm chức năng mới'}
+        size="lg"
+        submitLabel={editItem ? 'Cập nhật' : 'Thêm mới'}
+      >
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <TextField
+          control={form.control}
+          name="ma"
+          label="Mã chức năng"
+          required
+          placeholder="VD: QUAN_LY_DU_AN"
+        />
+        <NumberField
+          control={form.control}
+          name="sapXep"
+          label="Thứ tự sắp xếp"
+          placeholder="VD: 1"
+          min={1}
+        />
 
-        {/* Body */}
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 overflow-y-auto px-5 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Mã chức năng" required error={errors.ma?.message}>
-              <Input
-                {...register('ma')}
-                placeholder="VD: QUAN_LY_DU_AN"
-                className={cn('text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12')}
-              />
-            </Field>
-            <Field label="Thứ tự sắp xếp" error={errors.sapXep?.message}>
-              <Input
-                {...register('sapXep')}
-                type="number"
-                placeholder="VD: 1"
-                className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
-              />
-            </Field>
-          </div>
+        <TextField
+          control={form.control}
+          name="ten"
+          label="Tên chức năng"
+          required
+          placeholder="VD: Quản lý dự án đầu tư"
+          className="col-span-2"
+        />
 
-          <Field label="Tên chức năng" required error={errors.ten?.message}>
-            <Input
-              {...register('ten')}
-              placeholder="VD: Quản lý dự án đầu tư"
-              className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
-            />
-          </Field>
+        <TextField
+          control={form.control}
+          name="url"
+          label="URL"
+          placeholder="VD: /du-an"
+        />
+        <TextField
+          control={form.control}
+          name="icon"
+          label="Icon"
+          placeholder="VD: Building2"
+        />
 
-          <Field label="URL" error={errors.url?.message}>
-            <Input
-              {...register('url')}
-              placeholder="VD: /du-an"
-              className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
-            />
-          </Field>
+        <SelectField
+          control={form.control}
+          name="idCha"
+          label="Chức năng cha"
+          placeholder="— Không có —"
+          options={parentOpts}
+          className="col-span-2"
+        />
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Icon" error={errors.icon?.message}>
-              <Input
-                {...register('icon')}
-                placeholder="VD: Building2"
-                className="text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
-              />
-            </Field>
-
-            <Field label="Chức năng cha" error={errors.idCha?.message}>
-              <select {...register('idCha')} className={selectCls}>
-                <option value="">— Không có —</option>
-                {parentOptions
-                  .filter((p) => p.Id !== editItem?.Id)
-                  .map((p) => (
-                    <option key={p.Id} value={p.Id}>
-                      {p.Ten}
-                    </option>
-                  ))}
-              </select>
-            </Field>
-          </div>
-
-          <Field label="Ghi chú" error={errors.ghiChu?.message}>
-            <Textarea
-              {...register('ghiChu')}
-              rows={3}
-              placeholder="Mô tả thêm..."
-              className="resize-none text-[12.5px] focus-visible:border-[#1a3c6e]/40 focus-visible:ring-[#1a3c6e]/12"
-            />
-          </Field>
-
-          {/* Footer inside form so submit works */}
-          <DialogFooter className="pt-1">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              Hủy
-            </Button>
-            <Button type="submit" disabled={loading} className="bg-[#1a3c6e] hover:bg-[#0f2a52]">
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Đang lưu...
-                </span>
-              ) : editItem ? (
-                'Cập nhật'
-              ) : (
-                'Thêm mới'
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <TextareaField
+          control={form.control}
+          name="ghiChu"
+          label="Ghi chú"
+          placeholder="Mô tả thêm..."
+          rows={3}
+          noResize
+          className="col-span-2"
+        />
+      </div>
+      </FormDialog>
+      {DiscardDialog}
+    </>
   );
 }

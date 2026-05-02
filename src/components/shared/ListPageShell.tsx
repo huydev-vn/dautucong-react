@@ -1,16 +1,21 @@
-import { useRef, useEffect, type ReactNode } from 'react';
+import { useRef, useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { Search, X, Info } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
+
+interface SearchConfig {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  /** Debounce onChange calls by this many ms. The input display updates immediately. */
+  debounceMs?: number;
+}
 
 interface ListPageShellProps {
   title: string;
   description?: string;
   badge?: number | string;
   actions?: ReactNode;
-  search?: {
-    value: string;
-    onChange: (value: string) => void;
-    placeholder?: string;
-  };
+  search?: SearchConfig;
   filters?: ReactNode;
   children: ReactNode;
 }
@@ -26,7 +31,40 @@ export function ListPageShell({
 }: ListPageShellProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Phím '/' focus ô tìm kiếm — chỉ khi không đang focus input khác
+  // ── Debounced search ─────────────────────────────────────────
+  // localValue: hiển thị ngay trong input
+  // debouncedLocal: truyền lên onChange sau delay — dùng lại useDebounce có sẵn
+  const hasDebounce = !!search?.debounceMs;
+  const [localValue, setLocalValue] = useState('');
+  const debouncedLocal = useDebounce(localValue, search?.debounceMs ?? 0);
+
+  // Stable ref: luôn giữ onChange mới nhất, tránh stale closure trong effect
+  const onChangeRef = useRef(search?.onChange);
+  useLayoutEffect(() => { onChangeRef.current = search?.onChange; });
+
+  // Khi giá trị debounced thay đổi → gọi onChange lên parent (bỏ qua lần mount đầu)
+  const skipFirstSync = useRef(true);
+  useEffect(() => {
+    if (!hasDebounce) return;
+    if (skipFirstSync.current) { skipFirstSync.current = false; return; }
+    onChangeRef.current?.(debouncedLocal);
+  }, [debouncedLocal, hasDebounce]);
+
+  // Giá trị thực tế hiển thị trong input
+  const displayValue = hasDebounce ? localValue : (search?.value ?? '');
+
+  function handleSearchChange(v: string) {
+    if (!search) return;
+    if (hasDebounce) { setLocalValue(v); } else { search.onChange(v); }
+  }
+
+  function handleSearchClear() {
+    if (!search) return;
+    if (hasDebounce) setLocalValue('');
+    search.onChange(''); // xóa ngay, không chờ debounce
+  }
+
+  // ── '/' keyboard shortcut — focus search input ───────────────
   const searchEnabled = !!search;
   useEffect(() => {
     if (!searchEnabled) return;
@@ -83,20 +121,20 @@ export function ListPageShell({
               <input
                 ref={inputRef}
                 type="text"
-                value={search.value}
-                onChange={(e) => search.onChange(e.target.value)}
+                value={displayValue}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') {
-                    search.onChange('');
+                    handleSearchClear();
                     inputRef.current?.blur();
                   }
                 }}
                 placeholder={search.placeholder ?? 'Tìm kiếm...'}
                 className="h-8 w-72 rounded-lg border border-gray-200 bg-white pl-7.5 pr-8 text-[12.5px] text-gray-800 placeholder:text-gray-400 transition-all focus:border-[#1a3c6e]/40 focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]/12"
               />
-              {search.value ? (
+              {displayValue ? (
                 <button
-                  onClick={() => search.onChange('')}
+                  onClick={handleSearchClear}
                   className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X size={12} />
