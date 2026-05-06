@@ -6,9 +6,12 @@ export { StatusBadge } from './StatusBadge';
 export { ConfirmDialog } from './ConfirmDialog';
 export { SkeletonTable, SkeletonCard, SkeletonDetailPage, SkeletonTheme } from './Skeletons';
 export { DataTable } from './DataTable';
+export { TreeTable } from './TreeTable';
+export type { TreeTableProps, DefaultExpanded } from './TreeTable';
 export { ListPageShell } from './ListPageShell';
 export { NotFoundPage } from './NotFoundPage';
 export { ErrorBoundary } from './ErrorBoundary';
+export { PermissionGuard } from './PermissionGuard';
 export { FormDialog } from './FormDialog';
 export { AddButton } from './AddButton';
 // Form fields — import trực tiếp từ path để tối ưu bundle (rule 2.1)

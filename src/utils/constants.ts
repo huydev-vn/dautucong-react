@@ -30,4 +30,7 @@ export const QUERY_KEYS = {
   NGUOI_DUNG: 'nguoi-dung',
   DANH_MUC: 'danh-muc',
   CHUC_NANG: 'chuc-nang',
+  NHOM: 'nhom',
+  TAC_VU: 'tac-vu',
+  PHAN_QUYEN: 'phan-quyen',
 } as const;

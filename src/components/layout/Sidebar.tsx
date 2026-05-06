@@ -2,122 +2,44 @@
 import { useState } from 'react';
 import {
   LayoutDashboard,
-  Database,
-  HardHat,
-  MapPin,
-  Building2,
-  Activity,
-  CheckSquare,
-  Shield,
-  BarChart3,
-  Settings2,
   ChevronDown,
   Layers,
-  // User,
-  FolderOpen,
-  Landmark,
-  CalendarDays,
-  Banknote,
-  FileText,
   PanelLeftClose,
   PanelLeftOpen,
-  LayoutList,
-  Users,
-  KeyRound,
-  UsersRound,
-  ScanEye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui.store';
-// import { useAuth } from '@/features/auth';
-
-// ── Types ──────────────────────────────────────────────────────
-interface NavLeaf {
-  kind: 'leaf';
-  label: string;
-  href: string;
-  icon: React.ElementType;
-}
-
-interface NavParent {
-  kind: 'parent';
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  children: Array<{ label: string; href: string; icon: React.ElementType }>;
-}
-
-type NavEntry = NavLeaf | NavParent;
-
-// ── Nav config ─────────────────────────────────────────────────
-const NAV: NavEntry[] = [
-  { kind: 'leaf', label: 'Tổng quan', href: '/dashboard', icon: LayoutDashboard },
-  {
-    kind: 'parent',
-    id: 'danh-muc',
-    label: 'Quản lý danh mục',
-    icon: Database,
-    children: [
-      { label: 'Danh mục nhà thầu',    href: '/danh-muc/nha-thau',        icon: HardHat   },
-      { label: 'Danh mục địa bàn',      href: '/danh-muc/dia-ban',          icon: MapPin    },
-      { label: 'Danh mục dự án đầu tư', href: '/danh-muc/du-an-dau-tu',    icon: Building2 },
-      { label: 'Nhà đầu tư & TCKT',     href: '/danh-muc/nha-dau-tu-tckt', icon: Landmark  },
-    ],
-  },
-  {
-    kind: 'parent',
-    id: 'thong-tin-du-an',
-    label: 'Quản lý thông tin dự án',
-    icon: FolderOpen,
-    children: [
-      { label: 'Danh sách dự án', href: '/du-an',        icon: Building2    },
-      { label: 'Kế hoạch vốn',   href: '/ke-hoach-von', icon: CalendarDays },
-      { label: 'Giải ngân',      href: '/giai-ngan',    icon: Banknote     },
-      { label: 'Hợp đồng',       href: '/hop-dong',     icon: FileText     },
-    ],
-  },
-  { kind: 'leaf', label: 'Quản lý tiến độ thực hiện', href: '/tien-do-thuc-hien',  icon: Activity    },
-  { kind: 'leaf', label: 'Kết quả thực hiện dự án',   href: '/ket-qua-du-an',      icon: CheckSquare },
-  { kind: 'leaf', label: 'Quản lý thanh tra, KT',     href: '/thanh-tra-kiem-tra', icon: Shield      },
-  { kind: 'leaf', label: 'Báo cáo',                   href: '/bao-cao',            icon: BarChart3   },
-  {
-    kind: 'parent',
-    id: 'quan-tri',
-    label: 'Quản trị hệ thống',
-    icon: Settings2,
-    children: [
-      { label: 'Quản lý chức năng',         href: '/quan-tri/chuc-nang',            icon: LayoutList },
-      { label: 'Quản lý người dùng',         href: '/quan-tri/nguoi-dung',           icon: Users      },
-      { label: 'Phân quyền chức năng',       href: '/quan-tri/phan-quyen-chuc-nang',  icon: KeyRound   },
-      { label: 'Quản lý nhóm người dùng',   href: '/quan-tri/nhom-nguoi-dung',      icon: UsersRound },
-      { label: 'Phân quyền giám sát dự án', href: '/quan-tri/phan-quyen-giam-sat',  icon: ScanEye    },
-    ],
-  },
-];
-
+import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { getIcon } from '@/lib/icon-registry';
+import type { MenuItem } from '@/features/auth/types/auth.types';
 
 // ── Helpers ────────────────────────────────────────────────────
-function getInitialOpen(pathname: string): Set<string> {
+function getInitialOpen(menu: MenuItem[], pathname: string): Set<string> {
   const open = new Set<string>();
-  NAV.forEach((e) => {
-    if (e.kind === 'parent' && e.children.some((c) => pathname.startsWith(c.href))) {
-      open.add(e.id);
+  menu.forEach((item) => {
+    if (
+      item.Children.length > 0 &&
+      item.Children.some((c) => c.Url && pathname.startsWith(c.Url))
+    ) {
+      open.add(String(item.Id));
     }
   });
   return open;
 }
-// ── LeafItem (outside Sidebar to prevent re-define on each render) ───────────
+
+// ── LeafItem (outside Sidebar to prevent re-define on each render) ────────────
 interface LeafItemProps {
-  item: NavLeaf;
+  item: MenuItem;
   collapsed: boolean;
   onExpand: () => void;
 }
 
 function LeafItem({ item, collapsed, onExpand }: LeafItemProps) {
+  const Icon = getIcon(item.Icon);
   return (
     <NavLink
-      to={item.href}
-      title={collapsed ? item.label : undefined}
+      to={item.Url ?? '#'}
+      title={collapsed ? item.Ten : undefined}
       onClick={collapsed ? onExpand : undefined}
       className={({ isActive }) =>
         cn(
@@ -131,8 +53,8 @@ function LeafItem({ item, collapsed, onExpand }: LeafItemProps) {
     >
       {({ isActive }) => (
         <>
-          <item.icon size={16} className={cn('shrink-0', isActive ? 'text-white' : 'text-white/65')} />
-          {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+          <Icon size={16} className={cn('shrink-0', isActive ? 'text-white' : 'text-white/65')} />
+          {!collapsed && <span className="flex-1 truncate">{item.Ten}</span>}
           {!collapsed && isActive && (
             <span className="ml-auto size-1.5 shrink-0 rounded-full bg-sky-300" />
           )}
@@ -141,15 +63,16 @@ function LeafItem({ item, collapsed, onExpand }: LeafItemProps) {
     </NavLink>
   );
 }
+
 // ── Component ──────────────────────────────────────────────────
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggle    = useUIStore((s) => s.toggleSidebar);
-  // const { user } = useAuth();
-  const location = useLocation();
+  const menu      = useAuthStore((s) => s.menu);
+  const location  = useLocation();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(() =>
-    getInitialOpen(location.pathname),
+    getInitialOpen(menu, location.pathname),
   );
 
   const toggleGroup = (id: string) =>
@@ -190,28 +113,63 @@ export function Sidebar() {
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 space-y-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {NAV.map((entry) => {
-          if (entry.kind === 'leaf') {
-            return <LeafItem key={entry.href} item={entry} collapsed={collapsed} onExpand={toggle} />;
+
+        {/* Dashboard — cố định ở đầu, không phụ thuộc backend menu */}
+        <NavLink
+          to="/dashboard"
+          title={collapsed ? 'Tổng quan' : undefined}
+          className={({ isActive }) =>
+            cn(
+              'flex items-center rounded-lg text-[13px] font-medium transition-all duration-150',
+              collapsed ? 'h-10 w-10 mx-auto justify-center' : 'h-9 gap-3 px-3',
+              isActive
+                ? 'bg-white/20 text-white font-semibold'
+                : 'text-white/75 hover:bg-white/10 hover:text-white',
+            )
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <LayoutDashboard
+                size={16}
+                className={cn('shrink-0', isActive ? 'text-white' : 'text-white/65')}
+              />
+              {!collapsed && <span className="flex-1 truncate">Tổng quan</span>}
+              {!collapsed && isActive && (
+                <span className="ml-auto size-1.5 shrink-0 rounded-full bg-sky-300" />
+              )}
+            </>
+          )}
+        </NavLink>
+
+        {/* Dynamic menu từ backend */}
+        {menu.map((item) => {
+          const Icon = getIcon(item.Icon);
+          const groupId = String(item.Id);
+
+          if (item.Children.length === 0) {
+            return (
+              <LeafItem key={item.Id} item={item} collapsed={collapsed} onExpand={toggle} />
+            );
           }
 
-          const isAnyChildActive = entry.children.some((c) =>
-            location.pathname.startsWith(c.href),
+          const isAnyChildActive = item.Children.some(
+            (c) => c.Url && location.pathname.startsWith(c.Url),
           );
-          const isOpen = !collapsed && openGroups.has(entry.id);
+          const isOpen = !collapsed && openGroups.has(groupId);
 
           return (
-            <div key={entry.id}>
+            <div key={item.Id}>
               <button
-              onClick={() => {
-                if (collapsed) {
-                  toggle();
-                  setOpenGroups((prev) => { const next = new Set(prev); next.add(entry.id); return next; });
-                } else {
-                  toggleGroup(entry.id);
-                }
-              }}
-                title={collapsed ? entry.label : undefined}
+                onClick={() => {
+                  if (collapsed) {
+                    toggle();
+                    setOpenGroups((prev) => { const next = new Set(prev); next.add(groupId); return next; });
+                  } else {
+                    toggleGroup(groupId);
+                  }
+                }}
+                title={collapsed ? item.Ten : undefined}
                 className={cn(
                   'w-full flex items-center rounded-lg text-[13px] font-medium transition-all duration-150',
                   collapsed ? 'h-10 w-10 mx-auto justify-center' : 'h-9 gap-3 px-3',
@@ -220,10 +178,13 @@ export function Sidebar() {
                     : 'text-white/75 hover:bg-white/10 hover:text-white',
                 )}
               >
-                <entry.icon size={16} className={cn('shrink-0', isAnyChildActive ? 'text-white' : 'text-white/65')} />
+                <Icon
+                  size={16}
+                  className={cn('shrink-0', isAnyChildActive ? 'text-white' : 'text-white/65')}
+                />
                 {!collapsed && (
                   <>
-                    <span className="flex-1 truncate text-left">{entry.label}</span>
+                    <span className="flex-1 truncate text-left">{item.Ten}</span>
                     <ChevronDown
                       size={13}
                       className={cn(
@@ -242,34 +203,36 @@ export function Sidebar() {
                 )}
               >
                 <ul className="mt-0.5 ml-3 space-y-0.5 border-l border-sky-400/30 pl-3 pb-0.5">
-                  {entry.children.map((child) => (
-                    <li key={child.href}>
-                      <NavLink
-                        to={child.href}
-                        className={({ isActive }) =>
-                          cn(
-                            'flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-[12px] font-medium transition-all',
-                            isActive
-                              ? 'bg-white/20 text-white font-semibold'
-                              : 'text-white/60 hover:bg-white/10 hover:text-white',
-                          )
-                        }
-                      >
-                        <child.icon size={13} className="shrink-0 opacity-75" />
-                        <span className="truncate">{child.label}</span>
-                      </NavLink>
-                    </li>
-                  ))}
+                  {item.Children.map((child) => {
+                    const ChildIcon = getIcon(child.Icon);
+                    return (
+                      <li key={child.Id}>
+                        <NavLink
+                          to={child.Url ?? '#'}
+                          className={({ isActive }) =>
+                            cn(
+                              'flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-[12px] font-medium transition-all',
+                              isActive
+                                ? 'bg-white/20 text-white font-semibold'
+                                : 'text-white/60 hover:bg-white/10 hover:text-white',
+                            )
+                          }
+                        >
+                          <ChildIcon size={13} className="shrink-0 opacity-75" />
+                          <span className="truncate">{child.Ten}</span>
+                        </NavLink>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
           );
         })}
-
       </nav>
 
       {/* ── Nút thu gọn ── */}
-      <div className={`shrink-0 border-t border-white/[0.10] px-2 py-2`}>
+      <div className="shrink-0 border-t border-white/[0.10] px-2 py-2">
         <button
           data-tour="sidebar-collapse"
           onClick={toggle}
@@ -283,39 +246,6 @@ export function Sidebar() {
             : <><PanelLeftClose size={15} className="shrink-0" /><span>Thu gọn sidebar</span></>}
         </button>
       </div>
-
-      {/* ── Người dùng ── */}
-      {/* {user && (
-        <div
-          className={cn(
-            'shrink-0 border-t border-white/[0.12] px-3 py-3',
-            collapsed && 'flex justify-center',
-          )}
-        >
-          {collapsed ? (
-            <div
-              className="flex size-9 items-center justify-center rounded-lg bg-white/15 text-sky-200 ring-1 ring-white/20"
-              title={user.TenDaiDien || user.TenDangNhap}
-            >
-              <User size={15} />
-            </div>
-          ) : (
-            <div className="flex items-center gap-2.5 rounded-lg bg-white/[0.08] px-2.5 py-2 ring-1 ring-white/[0.12]">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sky-400/25 text-sky-200 ring-1 ring-sky-300/20">
-                <User size={14} />
-              </div>
-              <div className="overflow-hidden flex-1 min-w-0">
-                <p className="text-[12px] font-semibold text-white truncate leading-tight">
-                  {user.TenDaiDien || '—'}
-                </p>
-                <p className="text-[10px] text-sky-200/70 truncate leading-tight">
-                  {user.TenDangNhap}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )} */}
     </aside>
   );
 }

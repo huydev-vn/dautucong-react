@@ -10,27 +10,37 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-/** Map path segment → nhãn tiếng Việt */
+/**
+ * Map URL segment → nhãn breadcrumb tiếng Việt.
+ * Tổ chức theo nhóm nghiệp vụ để dễ bảo trì khi thêm route mới.
+ */
 const SEGMENT_LABELS: Record<string, string> = {
+  // ── Trang chủ ────────────────────────────────────────────────
   dashboard: 'Bảng điều khiển',
-  'danh-muc': 'Danh mục',
-  'nha-thau': 'Nhà thầu',
-  'dia-ban': 'Địa bàn',
-  'du-an-dau-tu': 'Dự án đầu tư',
+
+  // ── Danh mục dùng chung ──────────────────────────────────────
+  'danh-muc':        'Danh mục',
+  'nha-thau':        'Nhà thầu',
+  'dia-ban':         'Địa bàn',
+  'du-an-dau-tu':    'Dự án đầu tư',
   'nha-dau-tu-tckt': 'Nhà đầu tư TCKT',
-  'du-an': 'Dự án',
-  'ke-hoach-von': 'Kế hoạch vốn',
-  'giai-ngan': 'Giải ngân',
-  'hop-dong': 'Hợp đồng',
-  'tien-do-thuc-hien': 'Tiến độ thực hiện',
-  'ket-qua-du-an': 'Kết quả dự án',
+
+  // ── Nghiệp vụ chính ──────────────────────────────────────────
+  'du-an':              'Dự án',
+  'ke-hoach-von':       'Kế hoạch vốn',
+  'giai-ngan':          'Giải ngân',
+  'hop-dong':           'Hợp đồng',
+  'tien-do-thuc-hien':  'Tiến độ thực hiện',
+  'ket-qua-du-an':      'Kết quả dự án',
   'thanh-tra-kiem-tra': 'Thanh tra, kiểm tra',
-  'bao-cao': 'Báo cáo',
+  'bao-cao':            'Báo cáo',
+
+  // ── Quản trị hệ thống (/qtht/*) ──────────────────────────────
+  'qtht':       'Quản trị hệ thống',
   'nguoi-dung': 'Quản lý người dùng',
-  // Quản trị hệ thống
-  'quan-tri': 'Quản trị hệ thống',
-  'chuc-nang': 'Quản lý chức năng',
-  'nha-thau-ql': 'Quản lý nhà thầu',
+  'chuc-nang':  'Quản lý chức năng',
+  'phanquyen':  'Phân quyền',
+  'nha-thau-ql':'Quản lý nhà thầu',
 };
 
 const DYNAMIC_SEG = /^(\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;

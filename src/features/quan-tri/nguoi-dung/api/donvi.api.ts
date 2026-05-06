@@ -11,10 +11,10 @@ export interface DonViItem {
 const BASE = '/Dm_DonVi';
 
 export const donViApi = {
-  /** Lấy toàn bộ đơn vị — dùng cho dropdown */
+  /** Lấy toàn bộ đơn vị — dùng cho dropdown (không lọc hieuLuc để hiển thị tất cả) */
   getAll: async (): Promise<DonViItem[]> => {
     const { data } = await axiosInstance.get<ApiWrapped<PagedResult<DonViItem>>>(`${BASE}/LietKe`, {
-      params: { pageNumber: 1, pageSize: 500, hieuLuc: 1 },
+      params: { pageNumber: 1, pageSize: 500 },
     });
     return data.data?.Items ?? [];
   },
