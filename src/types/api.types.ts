@@ -5,6 +5,9 @@
 /**
  * LibNetCore bọc TẤT CẢ response trong wrapper này.
  * Ánh xạ từ cấu trúc { status, data, message } của backend.
+ *
+ * Dạng đầy đủ khi gọi API phân trang:
+ *   ApiWrapped<PagedResult<T>>
  */
 export interface ApiWrapped<T> {
   status: number;
@@ -15,6 +18,8 @@ export interface ApiWrapped<T> {
 /**
  * Ánh xạ DTKT.Util.Model.BaseModel.
  * Mọi entity model đều kế thừa interface này.
+ *
+ * Lưu ý: backend dùng decimal cho Id/IdDonVi nên frontend nhận số.
  */
 export interface BaseModel {
   IdDonVi: number;
@@ -29,33 +34,15 @@ export interface BaseModel {
 /**
  * Ánh xạ DTKT.Util.Model.Common.PagedResultModel<T>.
  * Dùng sau khi unwrap ApiWrapped<PagedResult<T>>.
+ *
+ * Ví dụ response thực tế:
+ *   { status: 200, data: { Page, PageSize, Total, Items: [...] }, message: "Success" }
  */
 export interface PagedResult<T> {
   Page: number;
   PageSize: number;
   Total: number;
   Items: T[];
-}
-
-// ============================================================
-// Legacy — giữ lại cho các feature placeholder chưa connect API
-// ============================================================
-
-/** @deprecated Dùng ApiWrapped<T> thay thế */
-export interface ApiResponse<T> {
-  data: T;
-  message: string;
-  success: boolean;
-  statusCode: number;
-}
-
-/** @deprecated Dùng PagedResult<T> thay thế */
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
 }
 
 // ============================================================
@@ -71,3 +58,26 @@ export interface PaginationParams {
 }
 
 export type QueryParams = PaginationParams & Record<string, string | number | boolean | undefined>;
+
+// ============================================================
+// Placeholder types — dùng tạm cho các feature chưa connect API thật
+// TODO: migrate du-an, ke-hoach-von, nha-thau sang ApiWrapped<PagedResult<T>>
+// ============================================================
+
+/** @deprecated → dùng ApiWrapped<T> */
+export interface ApiResponse<T> {
+  data: T;
+  message: string;
+  success: boolean;
+  statusCode: number;
+}
+
+/** @deprecated → dùng PagedResult<T> */
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
