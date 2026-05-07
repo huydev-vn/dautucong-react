@@ -8,9 +8,12 @@ import { HighlightText } from '@/components/shared/HighlightText';
 import { TableBadge } from '@/components/shared/TableBadge';
 import { AddButton } from '@/components/shared/AddButton';
 import { DataTable } from '@/components/shared/DataTable';
+import { TableRowActions, type RowActionDef } from '@/components/shared/TableRowActions';
 import { cn } from '@/lib/utils';
-import { DEFAULT_PAGE_SIZE } from '@/utils/constants';
+import { DEFAULT_PAGE_SIZE, CHUC_NANG_IDS, MA_TAC_VU } from '@/utils/constants';
+import type { MaTacVu } from '@/utils/constants';
 import { useAuthStore } from '@/features/auth';
+import { usePermission } from '@/features/auth/hooks/usePermission';
 import {
   useNguoiDungList,
   useSaveNguoiDung,
@@ -32,34 +35,6 @@ function parseNhomIds(raw: string | null): number[] {
   } catch { return []; }
 }
 
-// ── Row Actions ────────────────────────────────────────────────
-interface RowActionsProps {
-  item: NguoiDung;
-  onDetail: (item: NguoiDung) => void;
-  onEdit: (item: NguoiDung) => void;
-  onDelete: (item: NguoiDung) => void;
-  onResetPassword: (item: NguoiDung) => void;
-}
-
-function RowActions({ item, onDetail, onEdit, onDelete, onResetPassword }: RowActionsProps) {
-  return (
-    <div className="flex items-center justify-end gap-0.5">
-      <button onClick={() => onDetail(item)} title="Xem chi tiết" className="flex size-7 items-center justify-center rounded-lg text-sky-500/70 bg-sky-50 hover:bg-sky-100 transition-colors">
-        <Eye size={13} />
-      </button>
-      <button onClick={() => onResetPassword(item)} title="Đặt lại mật khẩu" className="flex size-7 items-center justify-center rounded-lg text-amber-500/70 bg-amber-50 hover:bg-amber-100 transition-colors">
-        <KeyRound size={13} />
-      </button>
-      <button onClick={() => onEdit(item)} title="Sửa" className="flex size-7 items-center justify-center rounded-lg text-[#1a3c6e]/60 bg-[#1a3c6e]/8 hover:bg-[#1a3c6e]/15 transition-colors">
-        <Pencil size={13} />
-      </button>
-      <button onClick={() => onDelete(item)} title="Xóa" className="flex size-7 items-center justify-center rounded-lg text-red-400/70 bg-red-50 hover:bg-red-100 transition-colors">
-        <Trash2 size={13} />
-      </button>
-    </div>
-  );
-}
-
 // ── Column definitions factory ─────────────────────────────────
 // Nhận handlers + context từ page, trả về ColumnDef[]
 // Đặt bên ngoài component để không tạo lại mỗi render (dùng useMemo ở page)
@@ -67,6 +42,7 @@ function buildColumns(
   search: string,
   page: number,
   nhomMap: Map<number, string>,
+  coQuyen: (maTacVu: MaTacVu) => boolean,
   handlers: {
     onDetail: (item: NguoiDung) => void;
     onEdit: (item: NguoiDung) => void;
@@ -74,6 +50,13 @@ function buildColumns(
     onResetPassword: (item: NguoiDung) => void;
   },
 ): ColumnDef<NguoiDung>[] {
+  const rowActions: RowActionDef<NguoiDung>[] = [
+    { key: 'view',           maTacVu: MA_TAC_VU.XEM, icon: Eye,      variant: 'view',    title: 'Xem chi tiết',      onClick: handlers.onDetail },
+    { key: 'reset-password', maTacVu: MA_TAC_VU.SUA, icon: KeyRound, variant: 'warning', title: 'Đặt lại mật khẩu', onClick: handlers.onResetPassword },
+    { key: 'edit',           maTacVu: MA_TAC_VU.SUA, icon: Pencil,   variant: 'edit',    title: 'Sửa',               onClick: handlers.onEdit },
+    { key: 'delete',         maTacVu: MA_TAC_VU.XOA, icon: Trash2,   variant: 'delete',  title: 'Xóa',               onClick: handlers.onDelete },
+  ];
+
   return [
     {
       id: 'index',
@@ -156,7 +139,7 @@ function buildColumns(
       header: 'Thao tác',
       meta: { className: 'w-32', align: 'right' },
       cell: ({ row }) => (
-        <RowActions item={row.original} {...handlers} />
+        <TableRowActions item={row.original} coQuyen={coQuyen} actions={rowActions} />
       ),
     },
   ];
@@ -165,6 +148,7 @@ function buildColumns(
 // ── Page ───────────────────────────────────────────────────────
 export function NguoiDungListPage() {
   const currentUser = useAuthStore((s) => s.user);
+  const { coQuyen } = usePermission(CHUC_NANG_IDS.NGUOI_DUNG);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
@@ -209,8 +193,8 @@ export function NguoiDungListPage() {
 
   // Columns chỉ tạo lại khi search/page/nhomMap/handlers thực sự thay đổi
   const columns = useMemo(
-    () => buildColumns(search, page, nhomMap, { onDetail: handleDetail, onEdit: handleEdit, onDelete: handleDelete, onResetPassword: handleResetPassword }),
-    [search, page, nhomMap, handleDetail, handleEdit, handleDelete, handleResetPassword],
+    () => buildColumns(search, page, nhomMap, coQuyen, { onDetail: handleDetail, onEdit: handleEdit, onDelete: handleDelete, onResetPassword: handleResetPassword }),
+    [search, page, nhomMap, coQuyen, handleDetail, handleEdit, handleDelete, handleResetPassword],
   );
 
   return (
@@ -220,7 +204,7 @@ export function NguoiDungListPage() {
         description="Tài khoản và phân quyền hệ thống"
         badge={total}
         search={{ value: search, onChange: handleSearchChange, placeholder: 'Tìm tài khoản, họ tên...', debounceMs: 300 }}
-        actions={<AddButton label="Thêm người dùng" onClick={handleOpenAdd} />}
+        actions={coQuyen('THEM') ? <AddButton label="Thêm người dùng" onClick={handleOpenAdd} /> : undefined}
       >
         {!isLoading && items.length === 0 && total === 0 ? (
           <EmptyState

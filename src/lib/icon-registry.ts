@@ -43,6 +43,7 @@ import {
   UsersRound,
   Eye,
   ScanEye,
+  CheckSquare2
 } from 'lucide-react';
 
 /** Statically analyzable registry — tên icon (PascalCase) → Lucide component */
@@ -73,6 +74,7 @@ const ICON_REGISTRY: Record<string, LucideIcon> = {
   Send,
   Settings,
   Target,
+  CheckSquare2,
 
   // ── Icons có trong backend HETHONG_TACVU ─────────────────────
   Eye,

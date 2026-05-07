@@ -19,8 +19,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   dashboard: 'Bảng điều khiển',
 
   // ── Danh mục dùng chung ──────────────────────────────────────
-  'danh-muc':        'Danh mục',
-  'nha-thau':        'Nhà thầu',
+  'qldm':        'Danh mục',
+  'dmphanloailuatdauthau':'Phân loại luật đấu thầu',
   'dia-ban':         'Địa bàn',
   'du-an-dau-tu':    'Dự án đầu tư',
   'nha-dau-tu-tckt': 'Nhà đầu tư TCKT',
@@ -37,18 +37,25 @@ const SEGMENT_LABELS: Record<string, string> = {
 
   // ── Quản trị hệ thống (/qtht/*) ──────────────────────────────
   'qtht':       'Quản trị hệ thống',
-  'nguoi-dung': 'Quản lý người dùng',
-  'chuc-nang':  'Quản lý chức năng',
+  'nguoidung': 'Quản lý người dùng',
+  'chucnang':  'Quản lý chức năng',
   'phanquyen':  'Phân quyền',
   'nha-thau-ql':'Quản lý nhà thầu',
 };
 
 const DYNAMIC_SEG = /^(\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 
+/**
+ * Các segment không có trang riêng — hiển thị là text thuần, không thành link
+ * để tránh 404 khi người dùng click.
+ */
+const NON_NAVIGABLE_SEGS = new Set(['qtht', 'qldm']);
+
 interface Crumb {
   label: string;
   path: string;
   isLast: boolean;
+  navigable: boolean;
 }
 
 function buildCrumbs(pathname: string): Crumb[] {
@@ -57,7 +64,12 @@ function buildCrumbs(pathname: string): Crumb[] {
   return segments.map((seg, i) => {
     acc += '/' + seg;
     const label = DYNAMIC_SEG.test(seg) ? 'Chi tiết' : (SEGMENT_LABELS[seg] ?? seg);
-    return { label, path: acc, isLast: i === segments.length - 1 };
+    return {
+      label,
+      path: acc,
+      isLast: i === segments.length - 1,
+      navigable: !NON_NAVIGABLE_SEGS.has(seg),
+    };
   });
 }
 
@@ -95,7 +107,7 @@ export function AppBreadcrumb() {
                   <BreadcrumbPage className="text-[12px] font-semibold text-[#1a3c6e]">
                     {crumb.label}
                   </BreadcrumbPage>
-                ) : (
+                ) : crumb.navigable ? (
                   <BreadcrumbLink asChild>
                     <Link
                       to={crumb.path}
@@ -104,6 +116,10 @@ export function AppBreadcrumb() {
                       {crumb.label}
                     </Link>
                   </BreadcrumbLink>
+                ) : (
+                  <span className="text-[12px] text-gray-400 cursor-default select-none">
+                    {crumb.label}
+                  </span>
                 )}
               </BreadcrumbItem>
             </React.Fragment>

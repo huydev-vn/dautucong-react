@@ -1,9 +1,25 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AuthState, LoginPayload, TacVuItem } from '../types/auth.types';
+import type { AuthState, LoginPayload, MenuItem, TacVuItem } from '../types/auth.types';
 import { authApi } from '../api/auth.api';
 import { STORAGE_KEYS } from '@/utils/constants';
 import { tokenStore } from '@/lib/token-store';
+
+// Normalize URL từ DB: cắt khoảng trắng, thêm dấu '/' đầu nếu thiếu
+function normalizeUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  return trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+}
+
+function normalizeMenu(items: MenuItem[]): MenuItem[] {
+  return items.map((item) => ({
+    ...item,
+    Url: normalizeUrl(item.Url),
+    Children: Array.isArray(item.Children) ? normalizeMenu(item.Children) : [],
+  }));
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -35,7 +51,7 @@ export const useAuthStore = create<AuthState>()(
           user: res.user,
           accessToken: res.accessToken,
           isAuthenticated: true,
-          menu: res.Menu ?? [],
+          menu: normalizeMenu(res.Menu ?? []),
           dsTacVu: res.DSTacVu ?? {},
           tacVuVersion: res.version ?? null,
         });

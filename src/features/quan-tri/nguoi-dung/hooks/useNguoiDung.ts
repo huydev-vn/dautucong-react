@@ -40,8 +40,11 @@ export function useSaveNguoiDung() {
       toast.success(vars.id > 0 ? 'Cập nhật người dùng thành công' : 'Thêm người dùng thành công');
       void qc.invalidateQueries({ queryKey: [QUERY_KEYS.NGUOI_DUNG] });
     },
-    onError: () => {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại');
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        ?? 'Có lỗi xảy ra, vui lòng thử lại';
+      toast.error(msg);
     },
   });
 }

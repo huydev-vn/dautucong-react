@@ -4,12 +4,13 @@
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   startTransition,
 } from 'react';
-import { Save, Shield, UsersRound } from 'lucide-react';
+import { Save, Shield, UsersRound, ChevronDown, Check } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 import { ListPageShell } from '@/components/shared/ListPageShell';
 import { TreeTable } from '@/components/shared/TreeTable';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
@@ -27,11 +28,17 @@ import type { Nhom, TacVu } from '../types/phan-quyen.types';
 interface PhanQuyenCtxValue {
   selected: ReadonlySet<string>;
   toggle: (key: string) => void;
+  bulkToggle: (chucNangIds: number[], tacVuId: number, toChecked: boolean) => void;
+  setGroupQuyen: (chucNangIds: number[], selectTacVuIds: number[], allTacVuIds: number[]) => void;
+  childrenMap: ReadonlyMap<number, number[]>;
 }
 
 const PhanQuyenCtx = createContext<PhanQuyenCtxValue>({
   selected: new Set(),
   toggle: () => {},
+  bulkToggle: () => {},
+  setGroupQuyen: () => {},
+  childrenMap: new Map(),
 });
 
 function makeKey(idChucNang: number, idTacVu: number): string {
@@ -42,9 +49,31 @@ function makeKey(idChucNang: number, idTacVu: number): string {
 // Module-level sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Checkbox cell — đọc selection từ context, column defs không phụ thuộc selection state */
+/**
+ * Checkbox cell — đọc selection từ context.
+ * Hàng cha: indeterminate khi chọn một phần, cascade click xuống toàn bộ con.
+ * Hàng lá: toggle đơn lẻ.
+ */
 function TacVuCell({ chucNangId, tacVuId }: { chucNangId: number; tacVuId: number }) {
-  const { selected, toggle } = useContext(PhanQuyenCtx);
+  const { selected, toggle, bulkToggle, childrenMap } = useContext(PhanQuyenCtx);
+  const children = childrenMap.get(chucNangId) ?? [];
+
+  if (children.length > 0) {
+    const checkedCount = children.filter((cid) => selected.has(makeKey(cid, tacVuId))).length;
+    const allChecked = checkedCount === children.length;
+    const isIndeterminate = checkedCount > 0 && !allChecked;
+    return (
+      <input
+        type="checkbox"
+        checked={allChecked}
+        ref={(el) => { if (el) el.indeterminate = isIndeterminate; }}
+        onChange={() => bulkToggle(children, tacVuId, !allChecked)}
+        className="h-3.5 w-3.5 cursor-pointer accent-[#1a3c6e]"
+        aria-label={`Quyền nhóm ${chucNangId} tác vụ ${tacVuId}`}
+      />
+    );
+  }
+
   const key = makeKey(chucNangId, tacVuId);
   return (
     <input
@@ -52,12 +81,12 @@ function TacVuCell({ chucNangId, tacVuId }: { chucNangId: number; tacVuId: numbe
       checked={selected.has(key)}
       onChange={() => toggle(key)}
       className="h-3.5 w-3.5 cursor-pointer accent-[#1a3c6e]"
-      aria-label={`Quyền chức năng ${chucNangId} - tác vụ ${tacVuId}`}
+      aria-label={`Quyền chức năng ${chucNangId} tác vụ ${tacVuId}`}
     />
   );
 }
 
-/** Select nhóm — gọn, hiển thị inline với tiêu đề qua slot filters của ListPageShell */
+/** Custom dropdown chọn nhóm — hiển thị cùng hàng với tiêu đề qua slot filters */
 function NhomSelect({
   nhomList,
   selectedId,
@@ -69,32 +98,131 @@ function NhomSelect({
   onSelect: (nhom: Nhom | null) => void;
   loading: boolean;
 }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Đóng khi click bên ngoài
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const selected = nhomList.find((n) => n.Id === selectedId) ?? null;
+
   return (
-    <div className="flex items-center gap-1.5">
-      <UsersRound size={13} className="shrink-0 text-[#1a3c6e]/50" />
-      <select
-        value={selectedId ?? ''}
+    <div ref={ref} className="relative">
+      <button
+        type="button"
         disabled={loading}
-        onChange={(e) => {
-          if (!e.target.value) { onSelect(null); return; }
-          const id = Number(e.target.value);
-          onSelect(nhomList.find((n) => n.Id === id) ?? null);
-        }}
+        onClick={() => setOpen((v) => !v)}
         className={cn(
-          'h-8 min-w-[160px] cursor-pointer rounded-lg border border-gray-200 bg-white px-3',
-          'text-[12.5px] text-gray-800 transition-colors',
-          'focus:border-[#1a3c6e]/40 focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]/12',
-          'disabled:cursor-not-allowed disabled:bg-gray-50',
-          !selectedId && 'text-gray-400',
+          'flex h-8 min-w-[180px] cursor-pointer items-center justify-between gap-2 rounded-lg border bg-white px-3 text-[12.5px] transition-colors',
+          open
+            ? 'border-[#1a3c6e]/40 ring-2 ring-[#1a3c6e]/12'
+            : 'border-gray-200 hover:border-[#1a3c6e]/40',
+          'disabled:cursor-not-allowed disabled:opacity-60',
         )}
       >
-        <option value="">— Chọn nhóm —</option>
-        {nhomList.map((n) => (
-          <option key={n.Id} value={n.Id}>
-            {n.Ten}
-          </option>
-        ))}
-      </select>
+        <div className="flex items-center gap-1.5">
+          <UsersRound size={13} className="shrink-0 text-[#1a3c6e]/50" />
+          <span className={selected ? 'text-gray-800' : 'text-gray-400'}>
+            {selected?.Ten ?? '— Chọn nhóm —'}
+          </span>
+        </div>
+        <ChevronDown
+          size={13}
+          className={cn('shrink-0 text-gray-400 transition-transform duration-200', open && 'rotate-180')}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-xl border border-gray-100 bg-white py-1 shadow-lg">
+          {nhomList.length === 0 && (
+            <div className="px-3 py-2 text-[12px] text-gray-400">Chưa có nhóm nào</div>
+          )}
+          {nhomList.map((nhom) => {
+            const isSelected = selectedId === nhom.Id;
+            return (
+              <button
+                key={nhom.Id}
+                type="button"
+                onClick={() => { onSelect(nhom); setOpen(false); }}
+                className={cn(
+                  'flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[12.5px] transition-colors hover:bg-[#1a3c6e]/[0.05]',
+                  isSelected ? 'text-[#1a3c6e]' : 'text-gray-700',
+                )}
+              >
+                <span className="flex w-4 shrink-0 items-center justify-center">
+                  {isSelected && <Check size={12} className="text-[#1a3c6e]" />}
+                </span>
+                <UsersRound size={13} className="shrink-0 text-[#1a3c6e]/50" />
+                <span className={isSelected ? 'font-semibold' : ''}>{nhom.Ten}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cell cột Chức năng — tên + 3 nút hành động hàng loạt cho hàng cha
+// ─────────────────────────────────────────────────────────────────────────────
+interface TenColCellProps {
+  row: Row<ChucNang>;
+  tacVuList: TacVu[];
+}
+
+function TenColCell({ row, tacVuList }: TenColCellProps) {
+  const { childrenMap, setGroupQuyen } = useContext(PhanQuyenCtx);
+  const chucNangId = row.original.Id;
+  const children = childrenMap.get(chucNangId) ?? [];
+  const isParent = children.length > 0;
+
+  const allTacVuIds = useMemo(() => tacVuList.map((tv) => tv.Id), [tacVuList]);
+  const basicTacVuIds = useMemo(() => {
+    const basicMas = new Set(['XEM', 'THEM', 'SUA', 'XOA']);
+    return tacVuList.filter((tv) => basicMas.has(tv.Ma)).map((tv) => tv.Id);
+  }, [tacVuList]);
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-1.5 text-[12.5px]',
+        row.depth === 0 ? 'font-semibold text-[#1a3c6e]' : 'text-gray-700',
+      )}
+    >
+      <span className="flex-1 leading-snug">{row.original.Ten}</span>
+      {isParent && (
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setGroupQuyen(children, basicTacVuIds, allTacVuIds); }}
+            className="cursor-pointer rounded bg-[#1a3c6e]/[0.08] px-1.5 py-0.5 text-[10px] font-medium text-[#1a3c6e] transition-colors hover:bg-[#1a3c6e]/[0.16]"
+          >
+            Cơ bản
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setGroupQuyen(children, allTacVuIds, allTacVuIds); }}
+            className="cursor-pointer rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+          >
+            Tất cả
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setGroupQuyen(children, [], allTacVuIds); }}
+            className="cursor-pointer rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-500 transition-colors hover:bg-red-100"
+          >
+            Bỏ chọn
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -106,17 +234,8 @@ function buildColumns(tacVuList: TacVu[]): ColumnDef<ChucNang>[] {
   const tenCol: ColumnDef<ChucNang> = {
     id: 'ten',
     header: 'Chức năng',
-    cell: ({ row }) => (
-      <span
-        className={cn(
-          'text-[12.5px]',
-          row.depth === 0 ? 'font-semibold text-[#1a3c6e]' : 'text-gray-700',
-        )}
-      >
-        {row.original.Ten}
-      </span>
-    ),
-    meta: { className: 'w-[160px] min-w-[140px] max-w-[200px]' },
+    cell: ({ row }) => <TenColCell row={row} tacVuList={tacVuList} />,
+    meta: { className: 'min-w-[280px]' },
   };
 
   const tacVuCols: ColumnDef<ChucNang>[] = tacVuList.map((tv) => ({
@@ -145,16 +264,30 @@ function PhanQuyenPanel({
   tacVuList: TacVu[];
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Lưu trạng thái gốc từ server để tính diff khi lưu
+  const originalRef = useRef<Set<string>>(new Set());
   const { data: quyenData, isFetching } = useQuyenTheoNhom(nhomId);
   const { mutate: luu, isPending: saving } = useLuuPhanQuyen();
 
-  // Khởi tạo selection từ server khi data tải xong — một lần, không cascade
-  // (Component remount theo key khi nhomId đổi → selected tự reset về new Set())
+  // Map chucNangId → children IDs — cascade checkbox + action buttons
+  const childrenMap = useMemo(() => {
+    const map = new Map<number, number[]>();
+    for (const cn of chucNangList) {
+      if (cn.IdCha && cn.IdCha > 0) {
+        if (!map.has(cn.IdCha)) map.set(cn.IdCha, []);
+        map.get(cn.IdCha)!.push(cn.Id);
+      }
+    }
+    return map;
+  }, [chucNangList]);
+
+  // Khởi tạo selection từ server khi data tải xong
+  // FIX: backend dùng Id_ChucNang / Id_TacVu (có gạch dưới)
   useEffect(() => {
     if (!quyenData) return;
-    startTransition(() => {
-      setSelected(new Set(quyenData.map((q) => makeKey(q.IdChucNang, q.IdTacVu))));
-    });
+    const initialSet = new Set(quyenData.map((q) => makeKey(q.Id_ChucNang, q.Id_TacVu)));
+    originalRef.current = initialSet;
+    startTransition(() => setSelected(new Set(initialSet)));
   }, [quyenData]);
 
   const toggle = useCallback((key: string) => {
@@ -166,18 +299,55 @@ function PhanQuyenPanel({
     });
   }, []);
 
+  const bulkToggle = useCallback((chucNangIds: number[], tacVuId: number, toChecked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const cid of chucNangIds) {
+        const key = makeKey(cid, tacVuId);
+        if (toChecked) next.add(key);
+        else next.delete(key);
+      }
+      return next;
+    });
+  }, []);
+
+  const setGroupQuyen = useCallback(
+    (chucNangIds: number[], selectTacVuIds: number[], allTacVuIds: number[]) => {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        for (const cid of chucNangIds) {
+          for (const tvId of allTacVuIds) next.delete(makeKey(cid, tvId));
+          for (const tvId of selectTacVuIds) next.add(makeKey(cid, tvId));
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
   const ctxValue = useMemo<PhanQuyenCtxValue>(
-    () => ({ selected, toggle }),
-    [selected, toggle],
+    () => ({ selected, toggle, bulkToggle, setGroupQuyen, childrenMap }),
+    [selected, toggle, bulkToggle, setGroupQuyen, childrenMap],
   );
 
   const columns = useMemo(() => buildColumns(tacVuList), [tacVuList]);
 
+  // Tính diff so với trạng thái gốc rồi gửi ADD/REMOVE để khớp HT_PHANQUYEN_LUU
   const handleSave = useCallback(() => {
-    const danhSachQuyen = [...selected].map((key) => {
-      const [idChucNang, idTacVu] = key.split('-').map(Number);
-      return { IdChucNang: idChucNang, IdTacVu: idTacVu };
-    });
+    const original = originalRef.current;
+    const danhSachQuyen: { Id_ChucNang: number; Id_TacVu: number; action: 'ADD' | 'REMOVE' }[] = [];
+    for (const key of selected) {
+      if (!original.has(key)) {
+        const [idChucNang, idTacVu] = key.split('-').map(Number);
+        danhSachQuyen.push({ Id_ChucNang: idChucNang, Id_TacVu: idTacVu, action: 'ADD' });
+      }
+    }
+    for (const key of original) {
+      if (!selected.has(key)) {
+        const [idChucNang, idTacVu] = key.split('-').map(Number);
+        danhSachQuyen.push({ Id_ChucNang: idChucNang, Id_TacVu: idTacVu, action: 'REMOVE' });
+      }
+    }
     luu({ Id_Nhom: nhomId, DanhSachQuyen: danhSachQuyen });
   }, [nhomId, selected, luu]);
 

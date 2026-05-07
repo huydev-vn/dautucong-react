@@ -23,13 +23,15 @@ export type TacVuPagedResult = PagedResult<TacVu>;
 
 // ── Quyền theo nhóm — flat row từ GET /PhanQuyen/QuyenTheoNhom ─
 // Ánh xạ HETHONG_PHANQUYEN: một dòng = một cặp (chức năng × tác vụ) được phép
+// IMPORTANT: backend C# model dùng Id_ChucNang / Id_TacVu (có dấu gạch dưới)
 export interface ChucNangTacVu {
-  IdChucNang: number;
-  IdTacVu: number;
+  Id_ChucNang: number;
+  Id_TacVu: number;
 }
 
-// ── Request body POST /api/PhanQuyen/Luu ─────────────────────
+// ── Do Request body POST /api/PhanQuyen/Luu trả về api thế này ─────────────────────
+// DB procedure HT_PHANQUYEN_LUU dùng action='ADD'/'REMOVE' để phân biệt thêm/xóa
 export interface PhanQuyenLuuRequest {
   Id_Nhom: number;
-  DanhSachQuyen: ChucNangTacVu[];
+  DanhSachQuyen: { Id_ChucNang: number; Id_TacVu: number; action: 'ADD' | 'REMOVE' }[];
 }

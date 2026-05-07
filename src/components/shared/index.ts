@@ -14,6 +14,10 @@ export { ErrorBoundary } from './ErrorBoundary';
 export { PermissionGuard } from './PermissionGuard';
 export { FormDialog } from './FormDialog';
 export { AddButton } from './AddButton';
+export { RowActionButton } from './RowActionButton';
+export type { RowActionVariant } from './RowActionButton';
+export { TableRowActions } from './TableRowActions';
+export type { RowActionDef } from './TableRowActions';
 // Form fields — import trực tiếp từ path để tối ưu bundle (rule 2.1)
 // VD: import { TextField } from '@/components/shared/Form/TextField';
 export {

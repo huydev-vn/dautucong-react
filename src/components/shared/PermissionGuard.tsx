@@ -1,10 +1,11 @@
 import { usePermission } from '@/features/auth/hooks/usePermission';
+import type { MaTacVu } from '@/utils/constants';
 
 interface PermissionGuardProps {
   /** ID chức năng (HETHONG_CHUCNANG.ID) cần kiểm tra */
   chucNangId: number;
-  /** Mã tác vụ cần kiểm tra: "XEM" | "THEM" | "SUA" | "XOA" | "HUYDUYET" | "LICHSU" | ... */
-  maTacVu: string;
+  /** Mã tác vụ cần kiểm tra (dùng hằng MA_TAC_VU để type-safe) */
+  maTacVu: MaTacVu;
   children: React.ReactNode;
   /** Nội dung fallback khi không có quyền (mặc định: không render gì) */
   fallback?: React.ReactNode;

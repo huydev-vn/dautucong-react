@@ -10,7 +10,7 @@ import { parseApiError } from '@/lib/parseApiError';
 
 const loginSchema = z.object({
   username: z.string().trim().toLowerCase().min(1, 'Vui lòng nhập tên đăng nhập'),
-  password: z.string().min(6, 'Mật khẩu tối thiểu 6 ký tự'),
+  password: z.string().min(1, 'Vui lòng nhập mật khẩu'), // .min(6, 'Mật khẩu tối thiểu 6 ký tự'),
   remember: z.boolean().optional(),
 });
 

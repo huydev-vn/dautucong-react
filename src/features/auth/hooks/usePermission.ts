@@ -1,12 +1,21 @@
 import { useMemo, useCallback } from 'react';
 import { useAuthStore } from '../stores/auth.store';
 import type { TacVuItem } from '../types/auth.types';
+import type { MaTacVu } from '@/utils/constants';
 
 export interface UsePermissionResult {
   /** Danh sách tác vụ được phân quyền cho chức năng này */
   tacVuList: TacVuItem[];
-  /** Kiểm tra user có tác vụ `maTacVu` ("XEM", "THEM", "SUA", "XOA", ...) không */
-  coQuyen: (maTacVu: string) => boolean;
+  /**
+   * Kiểm tra user có tác vụ không.
+   * Dùng hằng `MA_TAC_VU` thay vì string thô để có autocomplete + type-check.
+   *
+   * @example
+   * import { MA_TAC_VU } from '@/utils/constants';
+   * coQuyen(MA_TAC_VU.THEM)   // ✅ type-safe
+   * coQuyen('THEM')           // ✅ vẫn hợp lệ vì MaTacVu là union string
+   */
+  coQuyen: (maTacVu: MaTacVu) => boolean;
 }
 
 /**
@@ -31,7 +40,7 @@ export function usePermission(chucNangId: number): UsePermissionResult {
   const maSet = useMemo(() => new Set(tacVuList.map((t) => t.Ma)), [tacVuList]);
 
   const coQuyen = useCallback(
-    (maTacVu: string) => maSet.has(maTacVu),
+    (maTacVu: MaTacVu) => maSet.has(maTacVu),
     [maSet],
   );
 

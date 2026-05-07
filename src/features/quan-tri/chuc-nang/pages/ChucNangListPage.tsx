@@ -11,7 +11,11 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { HighlightText } from "@/components/shared/HighlightText";
 import { AddButton } from "@/components/shared/AddButton";
+import { RowActionButton } from "@/components/shared/RowActionButton";
 import { cn } from "@/lib/utils";
+import { CHUC_NANG_IDS, MA_TAC_VU } from "@/utils/constants";
+import type { MaTacVu } from "@/utils/constants";
+import { usePermission } from "@/features/auth/hooks/usePermission";
 import {
   useChucNangList,
   useSaveChucNang,
@@ -82,36 +86,25 @@ const GROUP_BADGE: Record<string, { label: string; cls: string }> = {
 // ── Action buttons — module level ──────────────────────────────
 interface RowActionsProps {
   item: ChucNang;
+  coQuyen: (maTacVu: MaTacVu) => boolean;
   onView: (item: ChucNang) => void;
   onEdit: (item: ChucNang) => void;
   onDelete: (item: ChucNang) => void;
 }
 
 
-function RowActions({ item, onView, onEdit, onDelete }: RowActionsProps) {
+function RowActions({ item, coQuyen, onView, onEdit, onDelete }: RowActionsProps) {
   return (
     <div className="flex items-center justify-end gap-0.5">
-      <button
-        onClick={() => onView(item)}
-        title="Xem chi tiết"
-        className="flex size-7 items-center justify-center rounded-lg text-gray-400/80 bg-gray-100 text-gray-600 transition-colors"
-      >
-        <Eye size={13} />
-      </button>
-      <button
-        onClick={() => onEdit(item)}
-        title="Sửa"
-        className="flex size-7 items-center justify-center rounded-lg text-[#1a3c6e]/60 bg-[#1a3c6e]/8 text-[#1a3c6e] transition-colors"
-      >
-        <Pencil size={13} />
-      </button>
-      <button
-        onClick={() => onDelete(item)}
-        title="Xóa"
-        className="flex size-7 items-center justify-center rounded-lg text-red-400/70 bg-red-50 text-red-500 transition-colors"
-      >
-        <Trash2 size={13} />
-      </button>
+      {coQuyen(MA_TAC_VU.XEM) && (
+        <RowActionButton variant="view" icon={Eye} title="Xem chi tiết" onClick={() => onView(item)} />
+      )}
+      {coQuyen(MA_TAC_VU.SUA) && (
+        <RowActionButton variant="edit" icon={Pencil} title="Sửa" onClick={() => onEdit(item)} />
+      )}
+      {coQuyen(MA_TAC_VU.XOA) && (
+        <RowActionButton variant="delete" icon={Trash2} title="Xóa" onClick={() => onDelete(item)} />
+      )}
     </div>
   );
 }
@@ -121,6 +114,7 @@ interface ParentRowProps {
   node: TreeNode;
   expanded: boolean;
   highlight: string;
+  coQuyen: (maTacVu: MaTacVu) => boolean;
   onToggle: (id: number) => void;
   onView: (item: ChucNang) => void;
   onEdit: (item: ChucNang) => void;
@@ -131,6 +125,7 @@ function ParentRow({
   node,
   expanded,
   highlight,
+  coQuyen,
   onToggle,
   onView,
   onEdit,
@@ -205,6 +200,7 @@ function ParentRow({
       <td className="w-32 px-3 py-2.5">
         <RowActions
           item={parent}
+          coQuyen={coQuyen}
           onView={onView}
           onEdit={onEdit}
           onDelete={onDelete}
@@ -220,6 +216,7 @@ interface ChildRowProps {
   index: number;
   isLast: boolean;
   highlight: string;
+  coQuyen: (maTacVu: MaTacVu) => boolean;
   onView: (item: ChucNang) => void;
   onEdit: (item: ChucNang) => void;
   onDelete: (item: ChucNang) => void;
@@ -230,6 +227,7 @@ function ChildRow({
   index,
   isLast,
   highlight,
+  coQuyen,
   onView,
   onEdit,
   onDelete,
@@ -284,6 +282,7 @@ function ChildRow({
       <td className="w-32 px-3 py-1.5">
         <RowActions
           item={item}
+          coQuyen={coQuyen}
           onView={onView}
           onEdit={onEdit}
           onDelete={onDelete}
@@ -328,6 +327,7 @@ function TreeSkeleton() {
 
 // ── Page ───────────────────────────────────────────────────────
 export function ChucNangListPage() {
+  const { coQuyen } = usePermission(CHUC_NANG_IDS.CHUC_NANG);
   const [search, setSearch] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
@@ -428,7 +428,7 @@ export function ChucNangListPage() {
           debounceMs: 400,
         }}
         actions={
-          <AddButton label="Thêm mới" onClick={handleOpenAdd} />
+          coQuyen('THEM') ? <AddButton label="Thêm mới" onClick={handleOpenAdd} /> : undefined
         }
       >
         {isLoading ? (
@@ -466,6 +466,7 @@ export function ChucNangListPage() {
                     node={node}
                     expanded={effectiveExpanded.has(node.parent.Id)}
                     highlight={search}
+                    coQuyen={coQuyen}
                     onToggle={handleToggle}
                     onView={handleView}
                     onEdit={handleEdit}
@@ -479,6 +480,7 @@ export function ChucNangListPage() {
                           index={idx}
                           isLast={idx === node.children.length - 1}
                           highlight={search}
+                          coQuyen={coQuyen}
                           onView={handleView}
                           onEdit={handleEdit}
                           onDelete={handleDelete}

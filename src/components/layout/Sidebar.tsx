@@ -44,7 +44,7 @@ function LeafItem({ item, collapsed, onExpand }: LeafItemProps) {
       className={({ isActive }) =>
         cn(
           'flex items-center rounded-lg text-[13px] font-medium transition-all duration-150',
-          collapsed ? 'h-10 w-10 mx-auto justify-center' : 'h-9 gap-3 px-3',
+          collapsed ? 'h-10 w-10 mx-auto justify-center' : 'min-h-9 gap-3 px-3 py-1.5',
           isActive
             ? 'bg-white/20 text-white font-semibold'
             : 'text-white/75 hover:bg-white/10 hover:text-white',
@@ -54,7 +54,7 @@ function LeafItem({ item, collapsed, onExpand }: LeafItemProps) {
       {({ isActive }) => (
         <>
           <Icon size={16} className={cn('shrink-0', isActive ? 'text-white' : 'text-white/65')} />
-          {!collapsed && <span className="flex-1 truncate">{item.Ten}</span>}
+          {!collapsed && <span className="flex-1 leading-snug">{item.Ten}</span>}
           {!collapsed && isActive && (
             <span className="ml-auto size-1.5 shrink-0 rounded-full bg-sky-300" />
           )}
@@ -172,7 +172,7 @@ export function Sidebar() {
                 title={collapsed ? item.Ten : undefined}
                 className={cn(
                   'w-full flex items-center rounded-lg text-[13px] font-medium transition-all duration-150',
-                  collapsed ? 'h-10 w-10 mx-auto justify-center' : 'h-9 gap-3 px-3',
+                  collapsed ? 'h-10 w-10 mx-auto justify-center' : 'min-h-9 gap-3 px-3 py-1.5',
                   isAnyChildActive
                     ? 'bg-white/20 text-white font-semibold'
                     : 'text-white/75 hover:bg-white/10 hover:text-white',
@@ -184,7 +184,7 @@ export function Sidebar() {
                 />
                 {!collapsed && (
                   <>
-                    <span className="flex-1 truncate text-left">{item.Ten}</span>
+                    <span className="flex-1 leading-snug text-left">{item.Ten}</span>
                     <ChevronDown
                       size={13}
                       className={cn(
@@ -211,7 +211,7 @@ export function Sidebar() {
                           to={child.Url ?? '#'}
                           className={({ isActive }) =>
                             cn(
-                              'flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-[12px] font-medium transition-all',
+                              'flex min-h-8 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-all',
                               isActive
                                 ? 'bg-white/20 text-white font-semibold'
                                 : 'text-white/60 hover:bg-white/10 hover:text-white',
@@ -219,7 +219,7 @@ export function Sidebar() {
                           }
                         >
                           <ChildIcon size={13} className="shrink-0 opacity-75" />
-                          <span className="truncate">{child.Ten}</span>
+                          <span className="leading-snug">{child.Ten}</span>
                         </NavLink>
                       </li>
                     );
