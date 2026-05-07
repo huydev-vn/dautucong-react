@@ -1,9 +1,9 @@
-﻿import { lazy } from 'react';
+﻿import { createElement, lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { ProtectedRoute } from './ProtectedRoute';
-import { withSuspense } from './PageLoader';
+import { withSuspense } from './withSuspense';
 import { PlaceholderPage } from '@/components/shared/PlaceholderPage';
 import { NotFoundPage } from '@/components/shared/NotFoundPage';
 import { PAGE_REGISTRY } from './page-registry';
@@ -19,7 +19,7 @@ const LoginPage = lazy(() =>
 export const router = createBrowserRouter([
   // Auth routes
   {
-    element: <AuthLayout />,
+    element: createElement(AuthLayout),
     children: [
       { path: '/login', element: withSuspense(LoginPage, 'auth') },
     ],
@@ -27,18 +27,18 @@ export const router = createBrowserRouter([
 
   // Protected routes
   {
-    element: <ProtectedRoute />,
+    element: createElement(ProtectedRoute),
     children: [
       {
-        element: <AppLayout />,
+        element: createElement(AppLayout),
         children: [
-          { index: true, element: <Navigate to="/dashboard" replace /> },
+          { index: true, element: createElement(Navigate, { to: '/dashboard', replace: true }) },
           // Generate tu PAGE_REGISTRY - xem page-registry.ts de them/sua route
           ...PAGE_REGISTRY.map(({ path, component: Page, title }) => ({
             path,
             element: Page
               ? withSuspense(Page)
-              : <PlaceholderPage title={title ?? path} />,
+              : createElement(PlaceholderPage, { title: title ?? path }),
           })),
         ],
       },
@@ -46,5 +46,5 @@ export const router = createBrowserRouter([
   },
 
   // 404
-  { path: '*', element: <NotFoundPage /> },
+  { path: '*', element: createElement(NotFoundPage) },
 ]);

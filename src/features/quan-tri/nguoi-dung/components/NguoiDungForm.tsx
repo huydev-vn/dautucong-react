@@ -1,4 +1,5 @@
-﻿import { useForm } from 'react-hook-form';
+﻿import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FormDialog } from '@/components/shared/FormDialog';
@@ -6,8 +7,8 @@ import { TextField } from '@/components/shared/Form/TextField';
 import { SelectField } from '@/components/shared/Form/SelectField';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import type { NhomItem } from '../api/nhom.api';
+import type { DonViItem } from '../api/donvi.api';
 import type { NguoiDung, NguoiDungFormValues } from '../types/nguoi-dung.types';
-import { useDonViAll } from '../hooks/useNguoiDung';
 
 // ── Validation schema ──────────────────────────────────────────
 const baseSchema = z.object({
@@ -67,6 +68,8 @@ interface NguoiDungFormProps {
   editItem: NguoiDung | null;
   /** Nhóm người dùng — đã fetch ở trang cha vì cần cho cả hiển thị bảng */
   nhomOptions: NhomItem[];
+  /** Đơn vị — fetch sẵn ở trang cha để không bị lazy-load delay khi mở dialog */
+  donViList: DonViItem[];
   loading?: boolean;
   onSubmit: (values: NguoiDungFormValues) => void;
   onClose: () => void;
@@ -77,20 +80,26 @@ export function NguoiDungForm({
   open,
   editItem,
   nhomOptions,
+  donViList,
   loading = false,
   onSubmit,
   onClose,
 }: NguoiDungFormProps) {
   const isEdit = editItem !== null;
 
-  // Đơn vị chỉ cần khi form mở — lazy fetch, không gọi khi mới vào trang
-  const { data: donViList = [] } = useDonViAll(open);
-
   const form = useForm<NguoiDungFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(isEdit ? schemaUpdate : schemaCreate) as any,
     defaultValues: toDefaults(editItem),
   });
+
+  // Reset form mỗi khi dialog mở hoặc editItem thay đổi — không cần key remount
+  useEffect(() => {
+    if (open) {
+      form.reset(toDefaults(editItem));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editItem]);
 
   const isLocked = form.watch('isDelete') === 1;
 

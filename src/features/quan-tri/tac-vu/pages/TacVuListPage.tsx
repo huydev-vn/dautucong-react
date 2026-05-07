@@ -107,7 +107,6 @@ export function TacVuListPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
-  const [formKey, setFormKey] = useState(0);
   const [editItem, setEditItem] = useState<TacVu | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TacVu | null>(null);
 
@@ -127,13 +126,11 @@ export function TacVuListPage() {
   const handleView   = useCallback((_item: TacVu) => { void _item; /* TODO: dialog chi tiết */ }, []);
   const handleEdit   = useCallback((item: TacVu) => {
     setEditItem(item);
-    setFormKey((k) => k + 1);
     setFormOpen(true);
   }, []);
   const handleDelete = useCallback((item: TacVu) => setDeleteTarget(item), []);
   const handleOpenAdd = useCallback(() => {
     setEditItem(null);
-    setFormKey((k) => k + 1);
     setFormOpen(true);
   }, []);
   const handleFormClose = useCallback(() => setFormOpen(false), []);
@@ -188,7 +185,6 @@ export function TacVuListPage() {
       </ListPageShell>
 
       <TacVuForm
-        key={editItem?.Id ?? `new-${formKey}`}
         open={formOpen}
         editItem={editItem}
         loading={saveMutation.isPending}

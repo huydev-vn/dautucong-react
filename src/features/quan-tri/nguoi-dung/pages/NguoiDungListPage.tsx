@@ -20,6 +20,7 @@ import {
   useDeleteNguoiDung,
   useDatLaiMatKhau,
   useNhomAll,
+  useDonViAll,
 } from '../hooks/useNguoiDung';
 import { NguoiDungForm } from '../components/NguoiDungForm';
 import { DatLaiMatKhauForm } from '../components/DatLaiMatKhauForm';
@@ -152,7 +153,6 @@ export function NguoiDungListPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
-  const [formKey, setFormKey] = useState(0);
   const [editItem, setEditItem] = useState<NguoiDung | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<NguoiDung | null>(null);
   const [resetTarget, setResetTarget] = useState<NguoiDung | null>(null);
@@ -160,6 +160,7 @@ export function NguoiDungListPage() {
 
   const { data, isLoading } = useNguoiDungList({ pageNumber: page, pageSize: DEFAULT_PAGE_SIZE, searchText: search || undefined });
   const { data: nhomList = [] } = useNhomAll();
+  const { data: donViList = [] } = useDonViAll();
 
   const saveMutation = useSaveNguoiDung();
   const deleteMutation = useDeleteNguoiDung();
@@ -175,7 +176,7 @@ export function NguoiDungListPage() {
   const handleEdit = useCallback((item: NguoiDung) => { setEditItem(item); setFormOpen(true); }, []);
   const handleDelete = useCallback((item: NguoiDung) => setDeleteTarget(item), []);
   const handleResetPassword = useCallback((item: NguoiDung) => setResetTarget(item), []);
-  const handleOpenAdd = useCallback(() => { setEditItem(null); setFormKey((k) => k + 1); setFormOpen(true); }, []);
+  const handleOpenAdd = useCallback(() => { setEditItem(null); setFormOpen(true); }, []);
   const handleFormClose = useCallback(() => setFormOpen(false), []);
 
   const handleFormSubmit = useCallback(
@@ -230,9 +231,9 @@ export function NguoiDungListPage() {
       />
 
       <NguoiDungForm
-        key={editItem?.Id ?? `new-${formKey}`}
         open={formOpen} editItem={editItem}
         nhomOptions={nhomList}
+        donViList={donViList}
         loading={saveMutation.isPending}
         onSubmit={handleFormSubmit} onClose={handleFormClose}
       />

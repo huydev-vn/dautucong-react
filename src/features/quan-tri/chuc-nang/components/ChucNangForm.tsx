@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,8 +52,6 @@ interface ChucNangFormProps {
 }
 
 // ── Component ──────────────────────────────────────────────────
-// key={editItem?.Id ?? 'new'} đặt ở parent → remount tự động reset form,
-// không cần useEffect để sync editItem → defaultValues
 export function ChucNangForm({
   open,
   editItem,
@@ -66,6 +65,12 @@ export function ChucNangForm({
     resolver: zodResolver(schema) as any,
     defaultValues: toDefaults(editItem),
   });
+
+  // Reset form mỗi khi dialog mở hoặc editItem thay đổi — không cần key remount
+  useEffect(() => {
+    if (open) form.reset(toDefaults(editItem));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editItem]);
 
   const parentOpts = parentOptions
     .filter((p) => p.Id !== editItem?.Id)

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { parseApiError } from '@/lib/parseApiError';
 import { QUERY_KEYS } from '@/utils/constants';
 import { nguoiDungApi } from '../api/nguoi-dung.api';
 import { nhomApi } from '../api/nhom.api';
@@ -41,10 +42,7 @@ export function useSaveNguoiDung() {
       void qc.invalidateQueries({ queryKey: [QUERY_KEYS.NGUOI_DUNG] });
     },
     onError: (err: unknown) => {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-        ?? 'Có lỗi xảy ra, vui lòng thử lại';
-      toast.error(msg);
+      toast.error(parseApiError(err));
     },
   });
 }
@@ -58,8 +56,8 @@ export function useDeleteNguoiDung() {
       toast.success('Xóa người dùng thành công');
       void qc.invalidateQueries({ queryKey: [QUERY_KEYS.NGUOI_DUNG] });
     },
-    onError: () => {
-      toast.error('Xóa thất bại, vui lòng thử lại');
+    onError: (err: unknown) => {
+      toast.error(parseApiError(err));
     },
   });
 }
@@ -70,8 +68,8 @@ export function useDatLaiMatKhau() {
     onSuccess: () => {
       toast.success('Đặt lại mật khẩu thành công');
     },
-    onError: () => {
-      toast.error('Đặt lại mật khẩu thất bại, vui lòng thử lại');
+    onError: (err: unknown) => {
+      toast.error(parseApiError(err));
     },
   });
 }

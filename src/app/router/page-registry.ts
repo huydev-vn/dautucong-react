@@ -29,29 +29,25 @@ export const PAGE_REGISTRY: PageEntry[] = [
   // ── Dashboard ──────────────────────────────────────────────────────────────
   {
     path: '/dashboard',
-    component: lazy(() => import('@/features/dashboard').then((m) => ({ default: m.DashboardPage }))),
+    component: lazy(() => import('@/features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage }))),
   },
 
   // ── Quản trị hệ thống (/qtht) ──────────────────────────────────────────────
   {
     path: '/qtht/chucnang',
-    component: lazy(() => import('@/features/quan-tri').then((m) => ({ default: m.ChucNangListPage }))),
+    component: lazy(() => import('@/features/quan-tri/chuc-nang/pages/ChucNangListPage').then((m) => ({ default: m.ChucNangListPage }))),
   },
   {
     path: '/qtht/nguoidung',
-    component: lazy(() => import('@/features/quan-tri').then((m) => ({ default: m.NguoiDungListPage }))),
+    component: lazy(() => import('@/features/quan-tri/nguoi-dung/pages/NguoiDungListPage').then((m) => ({ default: m.NguoiDungListPage }))),
   },
   {
     path: '/qtht/phanquyen',
-    component: lazy(() =>
-      import('@/features/quan-tri/phan-quyen/pages/PhanQuyenPage').then((m) => ({
-        default: m.PhanQuyenPage,
-      })),
-    ),
+    component: lazy(() => import('@/features/quan-tri/phan-quyen/pages/PhanQuyenPage').then((m) => ({ default: m.PhanQuyenPage }))),
   },
   {
     path: '/qtht/tacvu',
-    component: lazy(() => import('@/features/quan-tri').then((m) => ({ default: m.TacVuListPage }))),
+    component: lazy(() => import('@/features/quan-tri/tac-vu/pages/TacVuListPage').then((m) => ({ default: m.TacVuListPage }))),
   },
   { path: '/qtht/nhomnguoidung',  title: 'Quản lý nhóm người dùng' },
   { path: '/qtht/phanquyenthdv',  title: 'Phân quyền tổng hợp đơn vị' },
@@ -89,14 +85,14 @@ export const PAGE_REGISTRY: PageEntry[] = [
   {
     path: '/QLCGTTHDT/quanlyhopdonggoithau',
     component: lazy(() =>
-      import('@/features/hop-dong').then((m) => ({ default: m.HopDongListPage })),
+      import('@/features/hop-dong/pages/HopDongListPage').then((m) => ({ default: m.HopDongListPage })),
     ),
   },
   {
     // Detail page — có :id param, không xuất hiện trong menu
     path: '/QLCGTTHDT/quanlyhopdonggoithau/:id',
     component: lazy(() =>
-      import('@/features/hop-dong').then((m) => ({ default: m.HopDongDetailPage })),
+      import('@/features/hop-dong/pages/HopDongDetailPage').then((m) => ({ default: m.HopDongDetailPage })),
     ),
   },
   { path: '/QLCGTTHDT/quanlytiendohopdong',      title: 'Quản lý tiến độ thi công' },
@@ -110,14 +106,14 @@ export const PAGE_REGISTRY: PageEntry[] = [
   {
     path: '/qlttda/quanlythongtinduan',
     component: lazy(() =>
-      import('@/features/du-an').then((m) => ({ default: m.DuAnListPage })),
+      import('@/features/du-an/pages/DuAnListPage').then((m) => ({ default: m.DuAnListPage })),
     ),
   },
   {
     // Detail page — có :id param
     path: '/qlttda/quanlythongtinduan/:id',
     component: lazy(() =>
-      import('@/features/du-an').then((m) => ({ default: m.DuAnDetailPage })),
+      import('@/features/du-an/pages/DuAnDetailPage').then((m) => ({ default: m.DuAnDetailPage })),
     ),
   },
   { path: '/qlttda/thongbaopheduyetvataikhoan', title: 'TB phê duyệt và tài khoản hệ thống CĐT' },
@@ -125,7 +121,7 @@ export const PAGE_REGISTRY: PageEntry[] = [
   {
     path: '/qlttda/qlttthanhtoan',
     component: lazy(() =>
-      import('@/features/giai-ngan').then((m) => ({ default: m.GiaiNganListPage })),
+      import('@/features/giai-ngan/pages/GiaiNganListPage').then((m) => ({ default: m.GiaiNganListPage })),
     ),
   },
   { path: '/qlttda/dieuchinhtongmucdautu', title: 'Điều chỉnh tổng mức đầu tư' },
@@ -138,7 +134,7 @@ export const PAGE_REGISTRY: PageEntry[] = [
   {
     path: '/LKPBV/quanlykehoachvonnam',
     component: lazy(() =>
-      import('@/features/ke-hoach-von').then((m) => ({ default: m.KeHoachVonListPage })),
+      import('@/features/ke-hoach-von/pages/KeHoachVonListPage').then((m) => ({ default: m.KeHoachVonListPage })),
     ),
   },
 
@@ -153,7 +149,7 @@ export const PAGE_REGISTRY: PageEntry[] = [
   {
     path: '/bc/baocao',
     component: lazy(() =>
-      import('@/features/bao-cao').then((m) => ({ default: m.BaoCaoPage })),
+      import('@/features/bao-cao/pages/BaoCaoPage').then((m) => ({ default: m.BaoCaoPage })),
     ),
   },
 
@@ -161,7 +157,7 @@ export const PAGE_REGISTRY: PageEntry[] = [
   {
     path: '/nha-thau',
     component: lazy(() =>
-      import('@/features/nha-thau').then((m) => ({ default: m.NhaThauListPage })),
+      import('@/features/nha-thau/pages/NhaThauListPage').then((m) => ({ default: m.NhaThauListPage })),
     ),
   },
 ];

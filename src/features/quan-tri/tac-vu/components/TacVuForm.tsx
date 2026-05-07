@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -52,6 +53,12 @@ export function TacVuForm({ open, editItem, loading = false, onSubmit, onClose }
     resolver: zodResolver(schema) as any,
     defaultValues: toDefaults(editItem),
   });
+
+  // Reset form mỗi khi dialog mở hoặc editItem thay đổi — không cần key remount
+  useEffect(() => {
+    if (open) form.reset(toDefaults(editItem));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editItem]);
 
   const { guardedClose, DiscardDialog } = useUnsavedChanges(form.formState.isDirty, onClose);
 

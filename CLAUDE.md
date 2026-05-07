@@ -57,3 +57,37 @@ Path alias: `@/` → `src/`. Feature-Based Architecture.
 - Query keys: dùng từ `QUERY_KEYS` constant
 - Auth guard: `ProtectedRoute` dùng Zustand `isAuthenticated + isInitialized`
 - Layouts (`AppLayout`, `AuthLayout`): eager import — không lazy
+
+## Dialog Form Reset — BẮT BUỘC
+
+> Quy tắc này áp dụng cho **mọi** trang CRUD có dialog form.
+
+**KHÔNG được** dùng `key` prop + `formKey` counter để reset form khi mở dialog:
+```tsx
+// ❌ SAI — gây remount toàn bộ component, delay ~100-300ms
+const [formKey, setFormKey] = useState(0);
+<MyForm key={editItem?.Id ?? `new-${formKey}`} ... />
+```
+
+**PHẢI** dùng pattern sau:
+
+**1. Trong form component** — thêm `useEffect` reset:
+```tsx
+// Reset khi dialog mở hoặc editItem thay đổi
+useEffect(() => {
+  if (open) form.reset(toDefaults(editItem));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [open, editItem]);
+```
+
+**2. Trong page component** — bỏ `formKey`, bỏ `key` prop trên form:
+```tsx
+// ✅ ĐÚNG
+const handleOpenAdd = () => { setEditItem(null); setFormOpen(true); };
+const handleEdit = (item) => { setEditItem(item); setFormOpen(true); };
+<MyForm open={formOpen} editItem={editItem} ... />  // không có key prop
+```
+
+**3. Dropdown/select data** — prefetch ở **page level**, KHÔNG lazy fetch bên trong form với `enabled: open`.
+
+**Ngoại lệ hợp lệ:** `key` được phép khi component cần reset **toàn bộ state nội bộ phức tạp** khi chuyển entity khác nhau, ví dụ: `<PhanQuyenPanel key={selectedNhom.Id} />` (100+ checkbox state). Phải comment lý do rõ ràng.

@@ -331,7 +331,6 @@ export function ChucNangListPage() {
   const [search, setSearch] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
-  const [formKey, setFormKey] = useState(0);
   const [editItem, setEditItem] = useState<ChucNang | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChucNang | null>(null);
 
@@ -398,7 +397,6 @@ export function ChucNangListPage() {
 
   const handleOpenAdd = useCallback(() => {
     setEditItem(null);
-    setFormKey((k) => k + 1);
     setFormOpen(true);
   }, []);
 
@@ -495,7 +493,6 @@ export function ChucNangListPage() {
       </ListPageShell>
 
       <ChucNangForm
-        key={editItem ? `edit-${editItem.Id}` : `add-${formKey}`}
         open={formOpen}
         editItem={editItem}
         parentOptions={items}

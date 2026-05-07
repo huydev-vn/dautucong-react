@@ -1,6 +1,20 @@
 import axios from 'axios';
 
 /**
+ * LibNetCore đôi khi serialize anonymous C# object thành chuỗi dạng:
+ *   "{ success = False, message = Tài khoản đã tồn tại. }"
+ * Hàm này trích xuất giá trị của field `message` từ chuỗi đó.
+ * Nếu không khớp pattern, trả về chuỗi gốc.
+ */
+export function extractMessage(raw: string | undefined | null): string | undefined {
+  if (!raw) return undefined;
+  // Pattern: { ..., message = <value>, ... } hoặc { message = <value> }
+  const match = raw.match(/\bmessage\s*=\s*([^,}]+)/i);
+  if (match) return match[1].trim();
+  return raw.trim() || undefined;
+}
+
+/**
  * Phân loại lỗi từ Axios response thành thông báo tiếng Việt thân thiện.
  *
  * Thứ tự ưu tiên:
@@ -33,12 +47,14 @@ export function parseApiError(error: unknown): string {
 
   const status = error.response.status;
 
-  // Ưu tiên message từ server nếu có
-  const serverMsg: string | undefined =
+  // Ưu tiên message từ server nếu có — xử lý cả chuỗi C# anon-object
+  const rawMsg: string | undefined =
     error.response.data?.message ||
     error.response.data?.Message ||
     error.response.data?.title ||
     (typeof error.response.data === 'string' ? error.response.data : undefined);
+
+  const serverMsg = extractMessage(rawMsg);
 
   switch (status) {
     case 400:

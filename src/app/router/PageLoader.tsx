@@ -1,5 +1,3 @@
-import { Suspense } from 'react';
-
 /**
  * AuthPageLoader — dùng bên trong AuthLayout (nền gradient xanh)
  * Spinner trắng, hiển thị khi lazy-load trang /login
@@ -35,14 +33,5 @@ export function AppPageLoader() {
         </span>
       </div>
     </div>
-  );
-}
-
-export function withSuspense(Component: React.ComponentType, variant: 'auth' | 'app' = 'app') {
-  const fallback = variant === 'auth' ? <AuthPageLoader /> : <AppPageLoader />;
-  return (
-    <Suspense fallback={fallback}>
-      <Component />
-    </Suspense>
   );
 }
