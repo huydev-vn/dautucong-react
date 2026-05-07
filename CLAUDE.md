@@ -1,93 +1,335 @@
-# CLAUDE.md — Dự án Đầu tư Công
+# CLAUDE.md — Quy ước Frontend React
 
-## Stack
-React 19 + TypeScript strict, Vite, TailwindCSS v4, React Router v7, TanStack Query v5,
-Zustand v5, React Hook Form + Zod v4, Axios, shadcn/ui, Sonner, ECharts.
-Path alias: `@/` → `src/`. Feature-Based Architecture.
+> Đây là **luật của dự án**. Dev mới bắt buộc đọc hết trước khi viết code.
+> AI assistant (GitHub Copilot, Claude) cũng đọc file này để sinh code đúng chuẩn.
 
-## React Best Practices — BẮT BUỘC tuân thủ mọi lúc
+---
 
-> Full rules + examples: `.github/skills/react-best-practices/AGENTS.md`
-> Chỉ đọc file đó khi cần ví dụ chi tiết cho một rule cụ thể — không đọc toàn bộ.
+## 1. Công nghệ sử dụng
 
-### CRITICAL — Eliminating Waterfalls
-- `Promise.all()` cho independent async ops; KHÔNG await tuần tự khi không có dependency
-- Di chuyển `await` vào branch thực sự dùng nó (defer await until needed)
-- Kiểm tra cheap sync condition TRƯỚC khi await remote flag
-- Start promises sớm, await muộn trong API routes/Server Actions
+| Công nghệ | Phiên bản | Dùng để |
+|-----------|-----------|---------|
+| React | 19 | UI framework |
+| TypeScript | strict mode | Ngôn ngữ chính — không dùng `any` |
+| Vite | mới nhất | Dev server, build tool |
+| TailwindCSS | v4 | Styling — không viết CSS file riêng |
+| React Router | v7 | Điều hướng trang |
+| TanStack Query | v5 | Gọi API, cache dữ liệu từ server |
+| Zustand | v5 | State UI (sidebar, auth) |
+| React Hook Form + Zod | mới nhất | Form và validation |
+| shadcn/ui + Radix UI | mới nhất | Component UI có sẵn |
+| Sonner | mới nhất | Toast thông báo |
+| Axios | mới nhất | HTTP client |
 
-### CRITICAL — Bundle Size
-- KHÔNG import từ barrel file — import trực tiếp (lucide-react, date-fns, v.v.)
-- `React.lazy()` + `Suspense` cho heavy components không cần ở initial render
-- Lazy load module chỉ khi feature được kích hoạt
-- Prefer statically analyzable import paths (explicit map, không dynamic string concat)
+Path alias: `@/` trỏ tới `src/` — **luôn dùng `@/` thay vì đường dẫn tương đối**.
 
-### HIGH — Re-render Optimization
-- **KHÔNG định nghĩa component bên trong component** — remount mỗi render, mất state
-- Derive state trong render; KHÔNG dùng `useEffect` để sync state từ state/props khác
-- `useState(() => expensiveInit())` cho lazy initialization
-- `setX(prev => ...)` (functional setState) khi state mới phụ thuộc state cũ
-- Tách `useMemo`/`useEffect` có dependencies độc lập thành hooks riêng
-- KHÔNG wrap expression đơn giản primitive trong `useMemo` (overhead > benefit)
-- Logic do user action trigger → event handler, KHÔNG phải `useEffect`
-- Hoist default non-primitive props ra constant ngoài component khi dùng `memo()`
-- `useTransition` / `startTransition` cho non-urgent updates
+---
 
-### MEDIUM — Rendering Performance
-- Conditional rendering: ternary `? :` thay vì `&&` khi condition có thể là `0` / `NaN`
-- Animate wrapper `<div>`, KHÔNG animate SVG element trực tiếp
-- `useTransition` thay vì manual `isLoading` state
+## 2. Cấu trúc thư mục `src/`
 
-### LOW-MEDIUM — JavaScript Performance
-- `Map` thay vì `.find()` lặp lại nhiều lần cùng key
-- `Set` cho O(1) membership checks thay vì `Array.includes()`
-- `.toSorted()` thay vì `.sort()` (immutability)
-- Kết hợp `.filter().map()` thành `.flatMap()` một pass
-- Early return ngay khi đã có kết quả
-- Hoist RegExp ra ngoài render; dùng `useMemo` nếu dynamic
-
-### LOW — Advanced
-- KHÔNG đặt kết quả `useEffectEvent` vào dependency array
-- App-wide init: module-level guard, KHÔNG `useEffect(fn, [])`
-
-## Conventions dự án
-- Feature `index.ts` = public API barrel — chỉ export ra ngoài từ đây
-- Router: lazy import page **trực tiếp** (không qua barrel) để code splitting hoạt động
-- API files: dùng `axiosInstance`, trả về unwrapped data
-- Query keys: dùng từ `QUERY_KEYS` constant
-- Auth guard: `ProtectedRoute` dùng Zustand `isAuthenticated + isInitialized`
-- Layouts (`AppLayout`, `AuthLayout`): eager import — không lazy
-
-## Dialog Form Reset — BẮT BUỘC
-
-> Quy tắc này áp dụng cho **mọi** trang CRUD có dialog form.
-
-**KHÔNG được** dùng `key` prop + `formKey` counter để reset form khi mở dialog:
-```tsx
-// ❌ SAI — gây remount toàn bộ component, delay ~100-300ms
-const [formKey, setFormKey] = useState(0);
-<MyForm key={editItem?.Id ?? `new-${formKey}`} ... />
+```
+src/
+├── app/
+│   └── router/           ← Định nghĩa routes, lazy load pages
+│       ├── index.ts      ← createBrowserRouter — thêm route mới ở đây
+│       ├── page-registry.ts ← Danh sách tất cả lazy pages
+│       ├── ProtectedRoute.tsx ← Guard kiểm tra đăng nhập
+│       └── withSuspense.tsx   ← Wrapper Suspense cho lazy pages
+│
+├── components/
+│   ├── layout/           ← AppLayout, AuthLayout, Sidebar, Header
+│   ├── shared/           ← Component dùng chung nhiều feature (Form, Badge, Table...)
+│   └── ui/               ← shadcn/ui components — KHÔNG sửa trực tiếp
+│
+├── features/             ← MỖI FEATURE = 1 THƯ MỤC ĐỘC LẬP
+│   ├── auth/             ← Đăng nhập, phân quyền, auth store
+│   ├── du-an/            ← Dự án đầu tư
+│   ├── hop-dong/         ← Hợp đồng
+│   ├── giai-ngan/        ← Giải ngân
+│   ├── ke-hoach-von/     ← Kế hoạch vốn
+│   ├── nha-thau/         ← Nhà thầu
+│   ├── bao-cao/          ← Báo cáo
+│   ├── danh-muc/         ← Danh mục dùng chung
+│   ├── dashboard/        ← Trang tổng quan
+│   └── quan-tri/         ← Quản trị hệ thống (người dùng, nhóm, chức năng...)
+│
+├── hooks/                ← Hooks dùng chung KHÔNG thuộc feature nào
+│   ├── useDebounce.ts    ← Delay input search
+│   ├── useLocalStorage.ts
+│   └── useUnsavedChanges.tsx ← Cảnh báo khi rời trang chưa lưu
+│
+├── lib/                  ← Cấu hình cốt lõi — ĐỌC KỸ TRƯỚC KHI SỬA
+│   ├── axios.ts          ← Axios instance + interceptors (auth, 401 refresh)
+│   ├── query-client.ts   ← TanStack Query client (cấu hình cache mặc định)
+│   ├── query-keys.ts     ← Factory sinh cache key — NGUỒN DUY NHẤT cho cache keys
+│   ├── cache-config.ts   ← Thời gian cache theo tier (REFERENCE/LIST/DETAIL)
+│   ├── parseApiError.ts  ← Chuyển lỗi API thành thông báo tiếng Việt
+│   ├── token-store.ts    ← Lưu/lấy accessToken từ sessionStorage
+│   └── utils.ts          ← cn() helper cho TailwindCSS class merging
+│
+├── stores/
+│   └── ui.store.ts       ← Zustand store cho UI state (sidebar collapsed...)
+│
+├── types/
+│   ├── api.types.ts      ← ApiResponse<T>, PaginatedResponse<T> — kiểu response chung
+│   ├── common.types.ts   ← Kiểu dùng chung toàn app
+│   └── index.ts          ← Re-export để import gọn: `import type { ... } from '@/types'`
+│
+└── utils/
+    └── constants.ts      ← CHUC_NANG_IDS, MA_TAC_VU, DEFAULT_PAGE_SIZE...
 ```
 
-**PHẢI** dùng pattern sau:
+---
 
-**1. Trong form component** — thêm `useEffect` reset:
-```tsx
-// Reset khi dialog mở hoặc editItem thay đổi
-useEffect(() => {
-  if (open) form.reset(toDefaults(editItem));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [open, editItem]);
+## 3. Cấu trúc một feature — template chuẩn
+
+Mỗi feature trong `src/features/` có cấu trúc giống nhau:
+
+```
+features/du-an/
+├── api/
+│   └── du-an.api.ts      ← Tất cả gọi API (axiosInstance). Trả về data đã unwrap.
+├── hooks/
+│   └── useDuAn.ts        ← useQuery + useMutation. Khai báo cache, xử lý toast.
+├── pages/
+│   └── DuAnListPage.tsx  ← Page component — import hooks, render UI
+│   └── DuAnDetailPage.tsx
+├── types/
+│   └── du-an.types.ts    ← TypeScript types cho feature này
+└── index.ts              ← PUBLIC API — chỉ export những gì feature khác cần dùng
 ```
 
-**2. Trong page component** — bỏ `formKey`, bỏ `key` prop trên form:
-```tsx
-// ✅ ĐÚNG
-const handleOpenAdd = () => { setEditItem(null); setFormOpen(true); };
-const handleEdit = (item) => { setEditItem(item); setFormOpen(true); };
-<MyForm open={formOpen} editItem={editItem} ... />  // không có key prop
+**Nguyên tắc:** Feature khác muốn dùng gì của `du-an` → import từ `features/du-an/index.ts`, không import thẳng vào file con.
+
+---
+
+## 4. Cách thêm trang mới (step by step)
+
+### Bước 1 — Tạo page component
+```
+src/features/[ten-feature]/pages/TenPage.tsx
 ```
 
-**3. Dropdown/select data** — prefetch ở **page level**, KHÔNG lazy fetch bên trong form với `enabled: open`.
+### Bước 2 — Đăng ký vào page-registry
+```ts
+// src/app/router/page-registry.ts
+export const PAGE_REGISTRY = {
+  // ... existing pages
+  TEN_PAGE: lazy(() =>
+    import('@/features/ten-feature/pages/TenPage').then((m) => ({ default: m.TenPage }))
+  ),
+};
+```
+⚠️ **Quan trọng:** Import trực tiếp tới file `.tsx`, KHÔNG qua barrel `index.ts` → để code splitting hoạt động đúng.
 
-**Ngoại lệ hợp lệ:** `key` được phép khi component cần reset **toàn bộ state nội bộ phức tạp** khi chuyển entity khác nhau, ví dụ: `<PhanQuyenPanel key={selectedNhom.Id} />` (100+ checkbox state). Phải comment lý do rõ ràng.
+### Bước 3 — Thêm route vào router
+```ts
+// src/app/router/index.ts
+{ path: '/ten-path', element: withSuspense(PAGE_REGISTRY.TEN_PAGE, 'app') }
+```
+
+### Bước 4 — Thêm vào sidebar (nếu cần)
+```ts
+// src/components/layout/Sidebar.tsx — thêm menu item
+```
+
+---
+
+## 5. Cách gọi API và quản lý cache
+
+### Quy tắc vàng
+- **Gọi API** → luôn qua `axiosInstance` trong file `api/*.api.ts`
+- **Cache và state** → luôn qua `useQuery`/`useMutation` trong file `hooks/use*.ts`
+- **Component** → chỉ gọi hooks, không gọi API trực tiếp
+
+### Viết API file
+```ts
+// features/du-an/api/du-an.api.ts
+export const duAnApi = {
+  getList: async (params?: DuAnListParams): Promise<PaginatedResponse<DuAn>> => {
+    const { data } = await axiosInstance.get<ApiResponse<PaginatedResponse<DuAn>>>('/du-an', { params });
+    return data.data;  // ← unwrap .data vì backend bọc trong { status, data, message }
+  },
+};
+```
+
+### Viết hook — đọc dữ liệu
+```ts
+// features/du-an/hooks/useDuAn.ts
+import { queryKeys } from '@/lib/query-keys';
+import { STALE_TIME, GC_TIME } from '@/lib/cache-config';
+
+export function useDuAnList(params?: DuAnListParams) {
+  return useQuery({
+    queryKey: queryKeys.duAn.list(params),   // ← luôn dùng queryKeys factory
+    queryFn: () => duAnApi.getList(params),
+    staleTime: STALE_TIME.LIST,              // ← chọn tier phù hợp (xem mục 6)
+    gcTime: GC_TIME.LIST,
+  });
+}
+```
+
+### Viết hook — thêm/sửa/xóa
+```ts
+export function useSaveDuAn() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload) => duAnApi.save(payload),
+    onSuccess: (_, vars) => {
+      toast.success(vars.id ? 'Cập nhật thành công' : 'Thêm mới thành công');
+      // Xóa cache → useQuery tự động fetch lại dữ liệu mới
+      void qc.invalidateQueries({ queryKey: queryKeys.duAn.all() });
+    },
+    // KHÔNG cần khai báo onError — query-client.ts đã xử lý toast lỗi toàn cục
+  });
+}
+```
+
+### Chọn tier cache
+
+| Tier | staleTime | gcTime | Dùng cho |
+|------|-----------|--------|----------|
+| `STALE_TIME.REFERENCE` | 30 phút | 60 phút | Dropdown ít thay đổi: Nhóm, Đơn vị, Tác vụ |
+| `STALE_TIME.LIST` | 5 phút | 10 phút | Danh sách CRUD thông thường |
+| `STALE_TIME.DETAIL` | 2 phút | 5 phút | Chi tiết 1 record |
+
+### Invalidate cache — khi nào dùng gì
+```ts
+// Xóa TẤT CẢ cache của duAn (list + detail)
+void qc.invalidateQueries({ queryKey: queryKeys.duAn.all() });
+
+// Chỉ xóa list, giữ nguyên detail cache
+void qc.invalidateQueries({ queryKey: queryKeys.duAn.lists() });
+
+// Chỉ xóa 1 record cụ thể
+void qc.invalidateQueries({ queryKey: queryKeys.duAn.detail(id) });
+```
+
+---
+
+## 6. Phân quyền
+
+```ts
+import { usePermission } from '@/features/auth/hooks/usePermission';
+import { CHUC_NANG_IDS, MA_TAC_VU } from '@/utils/constants';
+
+function DuAnListPage() {
+  const { coQuyen } = usePermission(CHUC_NANG_IDS.DU_AN);
+
+  return (
+    <>
+      {coQuyen(MA_TAC_VU.THEM) && <AddButton />}
+      {coQuyen(MA_TAC_VU.XOA) && <DeleteButton />}
+    </>
+  );
+}
+```
+
+**Khi thêm chức năng mới:** Cập nhật `CHUC_NANG_IDS` trong `src/utils/constants.ts` với ID lấy từ bảng `HETHONG_CHUCNANG` trong database.
+
+---
+
+## 7. Form và validation
+
+```tsx
+// Luôn dùng React Hook Form + Zod
+const schema = z.object({
+  tenDuAn: z.string().min(1, 'Bắt buộc nhập'),
+  soVon: z.number().positive('Phải > 0'),
+});
+
+function DuAnForm({ open, editItem }: Props) {
+  const form = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  // Reset khi dialog mở — BẮT BUỘC dùng pattern này
+  useEffect(() => {
+    if (open) form.reset(toDefaults(editItem));
+  }, [open, editItem]);
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <TextField control={form.control} name="tenDuAn" label="Tên dự án" required />
+    </form>
+  );
+}
+```
+
+**Không reset form bằng `key` prop** — gây lag 100-300ms vì remount toàn bộ component.
+
+---
+
+## 8. Rules bắt buộc — ĐỌC KỸ
+
+### ❌ KHÔNG làm
+
+```tsx
+// ❌ Định nghĩa component bên trong component → remount mỗi render
+function Page() {
+  function Row({ item }) { return <tr>...</tr>; }  // SAI
+  return <table>{items.map(i => <Row item={i} />)}</table>;
+}
+
+// ❌ Import từ barrel khi lazy load page
+const Page = lazy(() => import('@/features/du-an'));  // SAI — bundle nhiều page vào 1 chunk
+
+// ❌ Dùng magic string cho cache key
+queryKey: ['du-an', 'list', params]  // SAI — dùng queryKeys.duAn.list(params)
+
+// ❌ Khai báo onError trong mutation nếu chỉ cần toast
+onError: () => toast.error('Lỗi')  // SAI — query-client.ts đã handle rồi
+
+// ❌ useEffect để sync state từ props/state khác
+useEffect(() => setFullName(first + ' ' + last), [first, last]);  // SAI
+const fullName = first + ' ' + last;  // ĐÚNG — derive trong render
+```
+
+### ✅ PHẢI làm
+
+```tsx
+// ✅ Component định nghĩa ngoài — ở module level
+function Row({ item }: { item: DuAn }) {
+  return <tr>...</tr>;
+}
+function Page() {
+  return <table>{items.map(i => <Row item={i} />)}</table>;
+}
+
+// ✅ Lazy import trực tiếp tới file
+const Page = lazy(() =>
+  import('@/features/du-an/pages/DuAnListPage').then(m => ({ default: m.DuAnListPage }))
+);
+
+// ✅ Dùng queryKeys factory
+queryKey: queryKeys.duAn.list(params)
+
+// ✅ Conditional với ternary khi value có thể là 0
+{count > 0 ? <Badge>{count}</Badge> : null}   // ĐÚNG
+{count && <Badge>{count}</Badge>}              // SAI — render "0" khi count = 0
+```
+
+---
+
+## 9. Styling
+
+- Dùng **TailwindCSS v4** — không viết file CSS riêng
+- Màu thương hiệu: `#1a3c6e` (xanh đậm)
+- Dùng hàm `cn()` từ `@/lib/utils` để merge class có điều kiện:
+  ```ts
+  import { cn } from '@/lib/utils';
+  className={cn('base-class', isActive && 'active-class', error && 'error-class')}
+  ```
+- Component UI có sẵn: `@/components/ui/` (shadcn/ui) — dùng trước khi tự viết
+
+---
+
+## 10. Các file quan trọng cần biết
+
+| File | Vai trò |
+|------|---------|
+| `src/lib/axios.ts` | HTTP client, tự động refresh token khi 401 |
+| `src/lib/query-client.ts` | Cấu hình cache mặc định, xử lý lỗi toàn cục |
+| `src/lib/query-keys.ts` | **Nguồn duy nhất** cho cache keys — thêm key mới ở đây |
+| `src/lib/cache-config.ts` | Thời gian cache — xem để chọn tier đúng |
+| `src/utils/constants.ts` | `CHUC_NANG_IDS`, `MA_TAC_VU`, `DEFAULT_PAGE_SIZE` |
+| `src/features/auth/stores/auth.store.ts` | Zustand store lưu thông tin user, token |
+| `src/app/router/page-registry.ts` | Danh sách tất cả lazy pages |

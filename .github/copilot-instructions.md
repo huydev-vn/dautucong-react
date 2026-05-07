@@ -2,7 +2,7 @@
 
 ## Stack
 React 19 + TypeScript strict, Vite, TailwindCSS v4, React Router v7, TanStack Query v5,
-Zustand v5, React Hook Form + Zod v4, Axios, shadcn/ui, Sonner, ECharts.
+Zustand v5, React Hook Form + Zod v4, Axios, shadcn/ui, Sonner.
 Path alias: `@/` → `src/`. Feature-Based Architecture.
 
 ## React Best Practices — BẮT BUỘC tuân thủ mọi lúc
@@ -51,9 +51,29 @@ Path alias: `@/` → `src/`. Feature-Based Architecture.
 - App-wide init: module-level guard, KHÔNG `useEffect(fn, [])`
 
 ## Conventions dự án
-- Feature `index.ts` = public API barrel — chỉ export ra ngoài từ đây
-- Router: lazy import page **trực tiếp** (không qua barrel) để code splitting hoạt động
-- API files: dùng `axiosInstance`, trả về unwrapped data
-- Query keys: dùng từ `QUERY_KEYS` constant
-- Auth guard: `ProtectedRoute` dùng Zustand `isAuthenticated + isInitialized`
+
+### API & Cache
+- API files: dùng `axiosInstance`, trả về unwrapped `data.data`
+- Query keys: dùng `queryKeys` factory từ `@/lib/query-keys` — KHÔNG dùng string thô
+- Cache tier: import `STALE_TIME`, `GC_TIME` từ `@/lib/cache-config` và chọn đúng tier:
+  - `REFERENCE` (30 phút) — dropdown ít thay đổi: Nhóm, Đơn vị, Tác vụ
+  - `LIST` (5 phút) — danh sách CRUD
+  - `DETAIL` (2 phút) — chi tiết 1 record
+- Mutation `onError`: KHÔNG khai báo — `query-client.ts` đã xử lý toast lỗi toàn cục
+- Sau mutation: `invalidateQueries({ queryKey: queryKeys.X.all() })` để xóa cache
+
+### Router
+- Lazy import page **trực tiếp** tới file `.tsx`, KHÔNG qua barrel `index.ts`
 - Layouts (`AppLayout`, `AuthLayout`): eager import — không lazy
+- `ProtectedRoute` dùng Zustand `isAuthenticated + isInitialized`
+
+### Form & Dialog
+- Luôn dùng React Hook Form + Zod; tất cả field dùng `Controller`
+- KHÔNG reset form bằng `key` prop + counter — dùng `useEffect(() => { if (open) form.reset(...) }, [open, editItem])`
+- Dropdown data: prefetch ở page level, KHÔNG fetch bên trong form với `enabled: open`
+- `key` prop chỉ được phép khi component có state nội bộ phức tạp (>50 items) — phải comment lý do
+
+### Misc
+- Feature `index.ts` = public API barrel — chỉ export những gì feature khác cần
+- `cn()` từ `@/lib/utils` để merge TailwindCSS class
+- Màu thương hiệu: `#1a3c6e`
