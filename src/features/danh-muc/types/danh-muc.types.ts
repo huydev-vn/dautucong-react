@@ -1,36 +1,42 @@
-import type { TrangThaiChung } from '@/types';
+import type { BaseModel } from '@/types';
 
-// Danh mục dùng chung
-export interface DanhMucItem {
-  id: string;
-  ma: string;
-  ten: string;
-  moTa?: string;
-  trangThai: TrangThaiChung;
-  thuTu: number;
-  ngayTao: string;
-  ngayCapNhat: string;
-}
+// ============================================================
+// Backend-aligned types — khớp với DTKT.Util.Model.DanhMuc.*
+// ============================================================
 
-// Danh mục nguồn vốn
-export type DanhMucNguonVon = DanhMucItem;
-
-// Danh mục lĩnh vực
-export type DanhMucLinhVuc = DanhMucItem;
-
-// Đơn vị hành chính
-export interface DonViHanhChinh {
-  id: string;
-  ma: string;
-  ten: string;
-  capDon: 'tinh' | 'huyen' | 'xa';
-  capChaId?: string;
-  trangThai: TrangThaiChung;
-}
-
-export interface DanhMucListParams {
-  page?: number;
+/**
+ * Request params cho các Dm_* controller (dùng pageNumber/searchText/hieuLuc
+ * theo convention của LibNetCore, khác với PaginationParams dùng page/search).
+ */
+export interface DmListParams {
+  pageNumber?: number;
   pageSize?: number;
-  search?: string;
-  trangThai?: TrangThaiChung;
+  searchText?: string;
+  /** 1 = đang hiệu lực, 0 = ngừng hiệu lực, null = tất cả */
+  hieuLuc?: number;
+}
+
+/** Ánh xạ Dm_LinhVucModel — bảng danh mục lĩnh vực đầu tư */
+export interface Dm_LinhVucItem extends BaseModel {
+  MaLinhVuc: string;
+  TenLinhVuc: string;
+  MoTa: string | null;
+  HieuLuc: number | null;
+}
+
+/** Ánh xạ Dm_DuAnDauTuModel — bảng danh mục dự án đầu tư */
+export interface Dm_DuAnDauTuItem extends BaseModel {
+  Ma: string;
+  Ten: string;
+  ChuDauTu: string | null;
+  MoTa: string | null;
+  DiaDiem: string | null;
+  TongMucDauTu: number | null;
+  NguonVon: string | null;
+  ThoiGianThucHien: string | null;
+  NgayBatDau: string | null;
+  NgayKetThuc: string | null;
+  TrangThai: string | null;
+  NhomDuAn: string | null;
+  IdLinhVuc: number | null;
 }

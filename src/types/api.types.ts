@@ -59,25 +59,3 @@ export interface PaginationParams {
 
 export type QueryParams = PaginationParams & Record<string, string | number | boolean | undefined>;
 
-// ============================================================
-// Placeholder types — dùng tạm cho các feature chưa connect API thật
-// TODO: migrate du-an, ke-hoach-von, nha-thau sang ApiWrapped<PagedResult<T>>
-// ============================================================
-
-/** @deprecated → dùng ApiWrapped<T> */
-export interface ApiResponse<T> {
-  data: T;
-  message: string;
-  success: boolean;
-  statusCode: number;
-}
-
-/** @deprecated → dùng PagedResult<T> */
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-

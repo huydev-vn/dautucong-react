@@ -1,28 +1,57 @@
 import axiosInstance from '@/lib/axios';
-import type { ApiResponse, PaginatedResponse } from '@/types';
-import type { DanhMucItem, DanhMucListParams } from '../types/danh-muc.types';
+import type { ApiWrapped, PagedResult, BaseModel } from '@/types';
+import type { DmListParams } from '../types/danh-muc.types';
 
-function createDanhMucApi(resource: string) {
-  const BASE = `/danh-muc/${resource}`;
+/**
+ * Factory tạo API client cho các Dm_* controller trong HeThong.
+ *
+ * Convention backend:
+ *   GET  /{controller}/LietKe?pageNumber=&pageSize=&searchText=&hieuLuc=
+ *   GET  /{controller}/LayTheoId?id={decimal}
+ *   POST /{controller}/Nhap          body: model
+ *   POST /{controller}/Xoa?id={decimal}
+ */
+function createDmApi<T extends BaseModel>(controller: string) {
   return {
-    getList: async (params?: DanhMucListParams): Promise<PaginatedResponse<DanhMucItem>> => {
-      const { data } = await axiosInstance.get<ApiResponse<PaginatedResponse<DanhMucItem>>>(BASE, { params });
+    getList: async (params?: DmListParams): Promise<PagedResult<T>> => {
+      const { data } = await axiosInstance.get<ApiWrapped<PagedResult<T>>>(
+        `/${controller}/LietKe`,
+        { params },
+      );
       return data.data;
     },
-    create: async (payload: Omit<DanhMucItem, 'id' | 'ngayTao' | 'ngayCapNhat'>): Promise<DanhMucItem> => {
-      const { data } = await axiosInstance.post<ApiResponse<DanhMucItem>>(BASE, payload);
+
+    getById: async (id: number): Promise<T> => {
+      const { data } = await axiosInstance.get<ApiWrapped<T>>(
+        `/${controller}/LayTheoId`,
+        { params: { id } },
+      );
       return data.data;
     },
-    update: async (id: string, payload: Partial<DanhMucItem>): Promise<DanhMucItem> => {
-      const { data } = await axiosInstance.put<ApiResponse<DanhMucItem>>(`${BASE}/${id}`, payload);
+
+    create: async (payload: Omit<T, keyof BaseModel>): Promise<number> => {
+      const { data } = await axiosInstance.post<ApiWrapped<number>>(
+        `/${controller}/Nhap`,
+        payload,
+      );
       return data.data;
     },
-    delete: async (id: string): Promise<void> => {
-      await axiosInstance.delete(`${BASE}/${id}`);
+
+    delete: async (id: number): Promise<number> => {
+      const { data } = await axiosInstance.post<ApiWrapped<number>>(
+        `/${controller}/Xoa`,
+        null,
+        { params: { id } },
+      );
+      return data.data;
     },
   };
 }
 
-export const danhMucNguonVonApi = createDanhMucApi('nguon-von');
-export const danhMucLinhVucApi = createDanhMucApi('linh-vuc');
-export const danhMucLoaiHopDongApi = createDanhMucApi('loai-hop-dong');
+export { createDmApi };
+
+// ── Các API cụ thể — thêm mới khi cần quản lý thêm danh mục ──────────────
+import type { Dm_LinhVucItem, Dm_DuAnDauTuItem } from '../types/danh-muc.types';
+
+export const danhMucLinhVucApi = createDmApi<Dm_LinhVucItem>('Dm_LinhVuc');
+export const danhMucDuAnDauTuApi = createDmApi<Dm_DuAnDauTuItem>('Dm_DuAnDauTu');
