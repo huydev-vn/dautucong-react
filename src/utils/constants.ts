@@ -18,23 +18,6 @@ export const STORAGE_KEYS = {
   SIDEBAR_COLLAPSED: 'sidebar_collapsed',
 } as const;
 
-// ── Query keys ───────────────────────────────────────────────
-export const QUERY_KEYS = {
-  DU_AN: 'du-an',
-  KE_HOACH_VON: 'ke-hoach-von',
-  GIAI_NGAN: 'giai-ngan',
-  HOP_DONG: 'hop-dong',
-  NHA_THAU: 'nha-thau',
-  BAO_CAO: 'bao-cao',
-  DASHBOARD: 'dashboard',
-  NGUOI_DUNG: 'nguoi-dung',
-  DANH_MUC: 'danh-muc',
-  CHUC_NANG: 'chuc-nang',
-  NHOM: 'nhom',
-  TAC_VU: 'tac-vu',
-  PHAN_QUYEN: 'phan-quyen',
-} as const;
-
 /**
  * ID chức năng từ bảng HETHONG_CHUCNANG — dùng cho usePermission(id).
  * Cập nhật khi thêm chức năng mới.

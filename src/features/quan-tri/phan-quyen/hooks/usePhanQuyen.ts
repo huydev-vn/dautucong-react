@@ -1,39 +1,45 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { QUERY_KEYS } from '@/utils/constants';
+import { queryKeys } from '@/lib/query-keys';
+import { STALE_TIME, GC_TIME } from '@/lib/cache-config';
+import { nhomApi } from '../../nguoi-dung/api/nhom.api';
 import { phanQuyenApi } from '../api/phan-quyen.api';
 import type { PhanQuyenLuuRequest } from '../types/phan-quyen.types';
 
 /**
- * Lấy toàn bộ nhóm — dùng key ['nhom','all'] giống nguoi-dung/nhomApi
- * để share cùng React Query cache, tránh collision.
+ * Nhóm dùng cho dropdown — dùng cùng queryKey + queryFn với useNguoiDung.useNhomDropdown()
+ * để share một cache entry duy nhất, tránh fetch trùng lặp.
  */
-export function useNhomAll() {
+export function useNhomDropdown() {
   return useQuery({
-    queryKey: ['nhom', 'all'],
-    queryFn: phanQuyenApi.getNhomList,
-    staleTime: 5 * 60 * 1000,
+    queryKey: queryKeys.nhom.dropdown(),
+    queryFn: nhomApi.getAll,
+    staleTime: STALE_TIME.REFERENCE,
+    gcTime: GC_TIME.REFERENCE,
   });
 }
 
-/** Lấy toàn bộ tác vụ — mỗi tác vụ là một cột checkbox trong TreeTable. */
-export function useTacVuAll() {
+/** Toàn bộ tác vụ — mỗi tác vụ là một cột checkbox trong bảng phân quyền. */
+export function useTacVuDropdown() {
   return useQuery({
-    queryKey: [QUERY_KEYS.TAC_VU, 'all'],
+    queryKey: queryKeys.tacVu.dropdown(),
     queryFn: phanQuyenApi.getTacVuList,
-    staleTime: 10 * 60 * 1000,
+    staleTime: STALE_TIME.REFERENCE,
+    gcTime: GC_TIME.REFERENCE,
   });
 }
 
 /**
- * Lấy quyền hiện tại của một nhóm — flat list {IdChucNang, IdTacVu}.
- * Chỉ gọi khi idNhom !== null.
+ * Quyền hiện tại của một nhóm — flat list {IdChucNang, IdTacVu}.
+ * Chỉ fetch khi idNhom !== null.
  */
 export function useQuyenTheoNhom(idNhom: number | null) {
   return useQuery({
-    queryKey: [QUERY_KEYS.PHAN_QUYEN, 'nhom', idNhom],
+    queryKey: queryKeys.phanQuyen.byNhom(idNhom!),
     queryFn: () => phanQuyenApi.getQuyenTheoNhom(idNhom!),
     enabled: idNhom !== null,
+    staleTime: STALE_TIME.LIST,
+    gcTime: GC_TIME.LIST,
   });
 }
 
@@ -44,12 +50,8 @@ export function useLuuPhanQuyen() {
     mutationFn: (req: PhanQuyenLuuRequest) => phanQuyenApi.luu(req),
     onSuccess: (_, vars) => {
       toast.success('Lưu phân quyền thành công');
-      void qc.invalidateQueries({
-        queryKey: [QUERY_KEYS.PHAN_QUYEN, 'nhom', vars.Id_Nhom],
-      });
-    },
-    onError: () => {
-      toast.error('Lưu phân quyền thất bại, vui lòng thử lại');
+      // Chỉ invalidate quyền của nhóm vừa lưu, không cần xóa cache nhóm khác
+      void qc.invalidateQueries({ queryKey: queryKeys.phanQuyen.byNhom(vars.Id_Nhom) });
     },
   });
 }

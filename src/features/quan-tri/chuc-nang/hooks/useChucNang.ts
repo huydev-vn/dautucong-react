@@ -1,22 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { QUERY_KEYS } from '@/utils/constants';
+import { queryKeys } from '@/lib/query-keys';
+import { STALE_TIME, GC_TIME } from '@/lib/cache-config';
 import { chucNangApi } from '../api/chuc-nang.api';
 import type { ChucNangFormValues, ChucNangListParams } from '../types/chuc-nang.types';
 
 export function useChucNangList(params?: ChucNangListParams) {
   return useQuery({
-    queryKey: [QUERY_KEYS.CHUC_NANG, 'list', params],
+    queryKey: queryKeys.chucNang.list(params),
     queryFn: () => chucNangApi.getList(params),
+    staleTime: STALE_TIME.LIST,
+    gcTime: GC_TIME.LIST,
   });
 }
 
-// Lấy toàn bộ để dùng trong dropdown IdCha
-export function useChucNangAll() {
+/** Toàn bộ chức năng dùng trong dropdown chọn cha — cache REFERENCE (30 phút) */
+export function useChucNangDropdown() {
   return useQuery({
-    queryKey: [QUERY_KEYS.CHUC_NANG, 'all'],
+    queryKey: queryKeys.chucNang.dropdown(),
     queryFn: () => chucNangApi.getList({ pageNumber: 1, pageSize: 1000 }),
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE_TIME.REFERENCE,
+    gcTime: GC_TIME.REFERENCE,
   });
 }
 
@@ -26,10 +30,8 @@ export function useSaveChucNang() {
     mutationFn: (model: ChucNangFormValues) => chucNangApi.save(model),
     onSuccess: (_, vars) => {
       toast.success(vars.id > 0 ? 'Cập nhật chức năng thành công' : 'Thêm chức năng thành công');
-      void qc.invalidateQueries({ queryKey: [QUERY_KEYS.CHUC_NANG] });
-    },
-    onError: () => {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại');
+      // invalidate toàn bộ chucNang cache (list + dropdown)
+      void qc.invalidateQueries({ queryKey: queryKeys.chucNang.all() });
     },
   });
 }
@@ -40,10 +42,7 @@ export function useDeleteChucNang() {
     mutationFn: (id: number) => chucNangApi.delete(id),
     onSuccess: () => {
       toast.success('Xóa chức năng thành công');
-      void qc.invalidateQueries({ queryKey: [QUERY_KEYS.CHUC_NANG] });
-    },
-    onError: () => {
-      toast.error('Xóa thất bại, vui lòng thử lại');
+      void qc.invalidateQueries({ queryKey: queryKeys.chucNang.all() });
     },
   });
 }

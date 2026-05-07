@@ -26,8 +26,10 @@ export { NumberField } from './NumberField';
 export { CurrencyField } from './CurrencyField';
 export { DateField } from './DateField';
 export { SelectField } from './SelectField';
+export { SearchSelectField } from './SearchSelectField';
 export { TextareaField } from './TextareaField';
 
 // Types
 export type { FormFieldProps } from './FormField';
 export type { SelectOption } from './SelectField';
+export type { SearchSelectOption, SearchSelectFieldProps } from './SearchSelectField';

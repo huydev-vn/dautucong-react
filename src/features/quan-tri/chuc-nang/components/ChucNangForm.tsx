@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { FormDialog } from '@/components/shared/FormDialog';
 import { TextField } from '@/components/shared/Form/TextField';
 import { NumberField } from '@/components/shared/Form/NumberField';
-import { SelectField } from '@/components/shared/Form/SelectField';
+import { SearchSelectField } from '@/components/shared/Form/SearchSelectField';
 import { TextareaField } from '@/components/shared/Form/TextareaField';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import type { ChucNang, ChucNangFormValues } from '../types/chuc-nang.types';
@@ -74,7 +74,7 @@ export function ChucNangForm({
 
   const parentOpts = parentOptions
     .filter((p) => p.Id !== editItem?.Id)
-    .map((p) => ({ value: p.Id, label: p.Ten }));
+    .map((p) => ({ value: p.Id, label: p.Ten, parentValue: p.IdCha }));
 
   const { guardedClose, DiscardDialog } = useUnsavedChanges(form.formState.isDirty, onClose);
 
@@ -127,12 +127,13 @@ export function ChucNangForm({
           placeholder="VD: Building2"
         />
 
-        <SelectField
+        <SearchSelectField
           control={form.control}
           name="idCha"
           label="Chức năng cha"
           placeholder="— Không có —"
           options={parentOpts}
+          clearable
           className="col-span-2"
         />
 

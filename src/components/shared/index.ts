@@ -29,9 +29,10 @@ export {
   CurrencyField,
   DateField,
   SelectField,
+  SearchSelectField,
   TextareaField,
 } from './Form';
 
 // Types
 export type { DataTableProps } from './DataTable';
-export type { FormFieldProps, SelectOption } from './Form';
+export type { FormFieldProps, SelectOption, SearchSelectOption } from './Form';

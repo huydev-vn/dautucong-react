@@ -17,9 +17,9 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useChucNangAll } from '../../chuc-nang/hooks/useChucNang';
+import { useChucNangDropdown } from '../../chuc-nang/hooks/useChucNang';
 import type { ChucNang } from '../../chuc-nang/types/chuc-nang.types';
-import { useNhomAll, useTacVuAll, useQuyenTheoNhom, useLuuPhanQuyen } from '../hooks/usePhanQuyen';
+import { useNhomDropdown, useTacVuDropdown, useQuyenTheoNhom, useLuuPhanQuyen } from '../hooks/usePhanQuyen';
 import type { Nhom, TacVu } from '../types/phan-quyen.types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -393,9 +393,9 @@ function PhanQuyenPanel({
 export function PhanQuyenPage() {
   const [selectedNhom, setSelectedNhom] = useState<Nhom | null>(null);
 
-  const { data: nhomData, isLoading: nhomLoading } = useNhomAll();
-  const { data: tacVuData, isLoading: tacVuLoading } = useTacVuAll();
-  const { data: chucNangData, isLoading: chucNangLoading } = useChucNangAll();
+  const { data: nhomData, isLoading: nhomLoading } = useNhomDropdown();
+  const { data: tacVuData, isLoading: tacVuLoading } = useTacVuDropdown();
+  const { data: chucNangData, isLoading: chucNangLoading } = useChucNangDropdown();
 
   const nhomList = nhomData ?? [];
 

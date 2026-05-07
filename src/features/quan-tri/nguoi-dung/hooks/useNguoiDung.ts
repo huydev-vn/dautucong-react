@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { parseApiError } from '@/lib/parseApiError';
-import { QUERY_KEYS } from '@/utils/constants';
+import { queryKeys } from '@/lib/query-keys';
+import { STALE_TIME, GC_TIME } from '@/lib/cache-config';
 import { nguoiDungApi } from '../api/nguoi-dung.api';
 import { nhomApi } from '../api/nhom.api';
 import { donViApi } from '../api/donvi.api';
@@ -9,27 +9,30 @@ import type { NguoiDungFormValues, NguoiDungListParams, DatLaiMatKhauValues } fr
 
 export function useNguoiDungList(params?: NguoiDungListParams) {
   return useQuery({
-    queryKey: [QUERY_KEYS.NGUOI_DUNG, 'list', params],
+    queryKey: queryKeys.nguoiDung.list(params),
     queryFn: () => nguoiDungApi.getList(params),
+    staleTime: STALE_TIME.LIST,
+    gcTime: GC_TIME.LIST,
   });
 }
 
-/** Lấy toàn bộ nhóm — cache 5 phút, dùng cho dropdown trong form */
-export function useNhomAll() {
+/** Nhóm dùng cho dropdown — chia sẻ cache với usePhanQuyen.useNhomDropdown() */
+export function useNhomDropdown() {
   return useQuery({
-    queryKey: ['nhom', 'all'],
+    queryKey: queryKeys.nhom.dropdown(),
     queryFn: nhomApi.getAll,
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE_TIME.REFERENCE,
+    gcTime: GC_TIME.REFERENCE,
   });
 }
 
-/** Lấy toàn bộ đơn vị — lazy (enabled=false cho đến khi form mở) */
-export function useDonViAll(enabled = true) {
+/** Đơn vị dùng cho dropdown */
+export function useDonViDropdown() {
   return useQuery({
-    queryKey: ['don-vi', 'all'],
+    queryKey: queryKeys.donVi.dropdown(),
     queryFn: donViApi.getAll,
-    staleTime: 5 * 60 * 1000,
-    enabled,
+    staleTime: STALE_TIME.REFERENCE,
+    gcTime: GC_TIME.REFERENCE,
   });
 }
 
@@ -39,10 +42,7 @@ export function useSaveNguoiDung() {
     mutationFn: (model: NguoiDungFormValues) => nguoiDungApi.save(model),
     onSuccess: (_, vars) => {
       toast.success(vars.id > 0 ? 'Cập nhật người dùng thành công' : 'Thêm người dùng thành công');
-      void qc.invalidateQueries({ queryKey: [QUERY_KEYS.NGUOI_DUNG] });
-    },
-    onError: (err: unknown) => {
-      toast.error(parseApiError(err));
+      void qc.invalidateQueries({ queryKey: queryKeys.nguoiDung.all() });
     },
   });
 }
@@ -54,10 +54,7 @@ export function useDeleteNguoiDung() {
       nguoiDungApi.delete(id, nguoiThaoTac),
     onSuccess: () => {
       toast.success('Xóa người dùng thành công');
-      void qc.invalidateQueries({ queryKey: [QUERY_KEYS.NGUOI_DUNG] });
-    },
-    onError: (err: unknown) => {
-      toast.error(parseApiError(err));
+      void qc.invalidateQueries({ queryKey: queryKeys.nguoiDung.all() });
     },
   });
 }
@@ -67,9 +64,6 @@ export function useDatLaiMatKhau() {
     mutationFn: (body: DatLaiMatKhauValues) => nguoiDungApi.datLaiMatKhau(body),
     onSuccess: () => {
       toast.success('Đặt lại mật khẩu thành công');
-    },
-    onError: (err: unknown) => {
-      toast.error(parseApiError(err));
     },
   });
 }

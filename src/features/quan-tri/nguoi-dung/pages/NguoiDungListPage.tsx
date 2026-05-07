@@ -19,8 +19,8 @@ import {
   useSaveNguoiDung,
   useDeleteNguoiDung,
   useDatLaiMatKhau,
-  useNhomAll,
-  useDonViAll,
+  useNhomDropdown,
+  useDonViDropdown,
 } from '../hooks/useNguoiDung';
 import { NguoiDungForm } from '../components/NguoiDungForm';
 import { DatLaiMatKhauForm } from '../components/DatLaiMatKhauForm';
@@ -159,8 +159,8 @@ export function NguoiDungListPage() {
   const [detailTarget, setDetailTarget] = useState<NguoiDung | null>(null);
 
   const { data, isLoading } = useNguoiDungList({ pageNumber: page, pageSize: DEFAULT_PAGE_SIZE, searchText: search || undefined });
-  const { data: nhomList = [] } = useNhomAll();
-  const { data: donViList = [] } = useDonViAll();
+  const { data: nhomList = [] } = useNhomDropdown();
+  const { data: donViList = [] } = useDonViDropdown();
 
   const saveMutation = useSaveNguoiDung();
   const deleteMutation = useDeleteNguoiDung();
