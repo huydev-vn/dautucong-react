@@ -49,7 +49,10 @@ export const PAGE_REGISTRY: PageEntry[] = [
     path: '/qtht/tacvu',
     component: lazy(() => import('@/features/quan-tri/tac-vu/pages/TacVuListPage').then((m) => ({ default: m.TacVuListPage }))),
   },
-  { path: '/qtht/nhomnguoidung',  title: 'Quản lý nhóm người dùng' },
+  {
+    path: '/qtht/nhomnguoidung',
+    component: lazy(() => import('@/features/quan-tri/nhom-nguoi-dung/pages/NhomNguoiDungListPage').then((m) => ({ default: m.NhomNguoiDungListPage }))),
+  },
   { path: '/qtht/phanquyenthdv',  title: 'Phân quyền tổng hợp đơn vị' },
 
   // ── Quản lý danh mục (/qldm) ────────────────────────────────────────────────

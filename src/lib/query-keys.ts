@@ -56,6 +56,16 @@ export const queryKeys = {
     list:  (params?: unknown) => ['nguoi-dung', 'list', params] as const,
   },
 
+  nhomNguoiDung: {
+    all:        () => ['nhom-nguoi-dung'] as const,
+    lists:      () => ['nhom-nguoi-dung', 'list'] as const,
+    list:       (params?: unknown) => ['nhom-nguoi-dung', 'list', params] as const,
+    membersAll: (idNhom: number) => ['nhom-nguoi-dung', 'members', idNhom] as const,
+    members:    (idNhom: number, params: unknown) => ['nhom-nguoi-dung', 'members', idNhom, params] as const,
+    memberIds:  (idNhom: number) => ['nhom-nguoi-dung', 'member-ids', idNhom] as const,
+    myNhomIds:  () => ['nhom-nguoi-dung', 'my-nhom-ids'] as const,
+  },
+
   phanQuyen: {
     all:     () => ['phan-quyen'] as const,
     byNhom:  (idNhom: number) => ['phan-quyen', 'nhom', idNhom] as const,
@@ -108,5 +118,19 @@ export const queryKeys = {
   dashboard: {
     all:     () => ['dashboard'] as const,
     summary: () => ['dashboard', 'summary'] as const,
+  },
+
+  // ── Danh mục Dm_* (HeThong API) ──────────────────────────────────────────────
+  danhMuc: {
+    linhVuc: {
+      all:    () => ['dm', 'linh-vuc'] as const,
+      list:   (params?: unknown) => ['dm', 'linh-vuc', 'list', params] as const,
+      detail: (id: number) => ['dm', 'linh-vuc', 'detail', id] as const,
+    },
+    duAnDauTu: {
+      all:    () => ['dm', 'du-an-dau-tu'] as const,
+      list:   (params?: unknown) => ['dm', 'du-an-dau-tu', 'list', params] as const,
+      detail: (id: number) => ['dm', 'du-an-dau-tu', 'detail', id] as const,
+    },
   },
 } as const;

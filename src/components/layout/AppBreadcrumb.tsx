@@ -41,6 +41,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   'chucnang':  'Quản lý chức năng',
   'phanquyen':  'Phân quyền',
   'nha-thau-ql':'Quản lý nhà thầu',
+  'nhomnguoidung': 'Quản lý nhóm người dùng',
 };
 
 const DYNAMIC_SEG = /^(\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
