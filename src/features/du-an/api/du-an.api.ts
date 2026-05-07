@@ -1,4 +1,4 @@
-import axiosInstance from '@/lib/axios';
+import { nghiepVuAxios } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types';
 import type { DuAn, DuAnListParams } from '../types/du-an.types';
 
@@ -6,26 +6,26 @@ const BASE = '/du-an';
 
 export const duAnApi = {
   getList: async (params?: DuAnListParams): Promise<PaginatedResponse<DuAn>> => {
-    const { data } = await axiosInstance.get<ApiResponse<PaginatedResponse<DuAn>>>(BASE, { params });
+    const { data } = await nghiepVuAxios.get<ApiResponse<PaginatedResponse<DuAn>>>(BASE, { params });
     return data.data;
   },
 
   getById: async (id: string): Promise<DuAn> => {
-    const { data } = await axiosInstance.get<ApiResponse<DuAn>>(`${BASE}/${id}`);
+    const { data } = await nghiepVuAxios.get<ApiResponse<DuAn>>(`${BASE}/${id}`);
     return data.data;
   },
 
   create: async (payload: Omit<DuAn, 'id' | 'ngayTao' | 'ngayCapNhat'>): Promise<DuAn> => {
-    const { data } = await axiosInstance.post<ApiResponse<DuAn>>(BASE, payload);
+    const { data } = await nghiepVuAxios.post<ApiResponse<DuAn>>(BASE, payload);
     return data.data;
   },
 
   update: async (id: string, payload: Partial<DuAn>): Promise<DuAn> => {
-    const { data } = await axiosInstance.put<ApiResponse<DuAn>>(`${BASE}/${id}`, payload);
+    const { data } = await nghiepVuAxios.put<ApiResponse<DuAn>>(`${BASE}/${id}`, payload);
     return data.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`${BASE}/${id}`);
+    await nghiepVuAxios.delete(`${BASE}/${id}`);
   },
 };

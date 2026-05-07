@@ -1,33 +1,27 @@
-import axios from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { toast } from 'sonner';
 import { STORAGE_KEYS } from '@/utils/constants';
 import { tokenStore } from './token-store';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const HE_THONG_BASE_URL = import.meta.env.VITE_HE_THONG_API_URL ?? 'http://localhost:5281/api';
+const NGHIEP_VU_BASE_URL = import.meta.env.VITE_NGHIEP_VU_API_URL ?? 'http://localhost:5282/api';
 
-export const axiosInstance = axios.create({
-  baseURL: BASE_URL,
-  timeout: 30_000,
-  withCredentials: true, // cần thiết để browser gửi HttpOnly cookie (refreshToken)
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-});
+function createAxiosInstance(baseURL: string): AxiosInstance {
+  return axios.create({
+    baseURL,
+    timeout: 30_000,
+    withCredentials: true, // cần thiết để browser gửi HttpOnly cookie (refreshToken)
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+  });
+}
 
-// ── Request interceptor: đính kèm access token ─────────────
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = tokenStore.get();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+export const heThongAxios = createAxiosInstance(HE_THONG_BASE_URL);
+export const nghiepVuAxios = createAxiosInstance(NGHIEP_VU_BASE_URL);
 
-// ── Response interceptor: silent refresh on 401 ─────────────
+// ── Shared state cho token refresh (dùng chung giữa 2 instances) ─────
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (token: string) => void;
@@ -39,60 +33,88 @@ const processQueue = (error: unknown, token: string | null) => {
   failedQueue = [];
 };
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+function handleSessionExpired() {
+  tokenStore.clear();
+  localStorage.removeItem(STORAGE_KEYS.USER);
+  toast.error('Phiên làm việc đã hết hạn, vui lòng đăng nhập lại.');
+  window.location.replace('/login');
+}
 
-    // Chỉ xử lý 401 chưa từng retry (config._retry ngăn đệ quy vô hạn)
-    if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
-    }
+// ── Request interceptor: đính kèm access token ─────────────
+function attachRequestInterceptor(instance: AxiosInstance) {
+  instance.interceptors.request.use(
+    (config) => {
+      const token = tokenStore.get();
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+      return config;
+    },
+    (error) => Promise.reject(error),
+  );
+}
 
-    // Nếu đang refresh, xếp hàng đợi
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        failedQueue.push({
-          resolve: (token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(axiosInstance(originalRequest));
-          },
-          reject,
+// ── Response interceptor: silent refresh on 401 ─────────────
+function attachResponseInterceptor(instance: AxiosInstance) {
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+
+      // Chỉ xử lý 401 chưa từng retry (config._retry ngăn đệ quy vô hạn)
+      if (error.response?.status !== 401 || originalRequest._retry) {
+        return Promise.reject(error);
+      }
+
+      // Nếu đang refresh, xếp hàng đợi
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: (token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(instance(originalRequest));
+            },
+            reject,
+          });
         });
-      });
-    }
+      }
 
-    originalRequest._retry = true;
-    isRefreshing = true;
+      originalRequest._retry = true;
+      isRefreshing = true;
 
-    try {
-      // Backend LibNetCore bọc response: { status: 200, data: "eyJ...", message: "Success" }
-      const { data: refreshResp } = await axiosInstance.post<{ status: number; data: string; message: string | null }>(
-        '/Auth/HeThong_RefreshToken',
-        null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        { _retry: true } as any,
-      );
-      const newToken = refreshResp.data;
+      try {
+        // Refresh token luôn gọi về HeThong (endpoint xác thực)
+        // Backend LibNetCore bọc response: { status: 200, data: "eyJ...", message: "Success" }
+        const { data: refreshResp } = await heThongAxios.post<{ status: number; data: string; message: string | null }>(
+          '/Auth/HeThong_RefreshToken',
+          null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          { _retry: true } as any,
+        );
+        const newToken = refreshResp.data;
 
-      tokenStore.set(newToken);
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-      originalRequest.headers.Authorization = `Bearer ${newToken}`;
-      processQueue(null, newToken);
-      return axiosInstance(originalRequest);
-    } catch {
-      processQueue(new Error('Session expired'), null);
+        tokenStore.set(newToken);
+        // Cập nhật Authorization cho cả 2 instances
+        heThongAxios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+        nghiepVuAxios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        processQueue(null, newToken);
+        return instance(originalRequest);
+      } catch {
+        processQueue(new Error('Session expired'), null);
 
-      // Xóa token và Zustand persisted state
-      tokenStore.clear();
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      toast.error('Phiên làm việc đã hết hạn, vui lòng đăng nhập lại.');
-      window.location.replace('/login');
-      return Promise.reject(error);
-    } finally {
-      isRefreshing = false;
-    }
-  },
-);
+        handleSessionExpired();
+        return Promise.reject(error);
+      } finally {
+        isRefreshing = false;
+      }
+    },
+  );
+}
 
-export default axiosInstance;
+attachRequestInterceptor(heThongAxios);
+attachRequestInterceptor(nghiepVuAxios);
+attachResponseInterceptor(heThongAxios);
+attachResponseInterceptor(nghiepVuAxios);
+
+// Backward compat — các file dùng default import vẫn trỏ về heThongAxios
+export const axiosInstance = heThongAxios;
+export default heThongAxios;
