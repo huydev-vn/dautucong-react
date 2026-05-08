@@ -126,7 +126,7 @@ export function NguoiDungForm({
           name="taiKhoan"
           label="Tài khoản"
           required
-          placeholder="VD: nguyen.van.a"
+          placeholder="VD: nguyen_van_a"
           disabled={isEdit}
           className="col-span-2"
         />
@@ -158,7 +158,7 @@ export function NguoiDungForm({
           name="email"
           label="Email"
           type="email"
-          placeholder="VD: a@example.com"
+          placeholder="VD: user@example.com"
         />
 
         <SelectField

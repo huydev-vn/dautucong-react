@@ -14,6 +14,8 @@ export { NotFoundPage } from './NotFoundPage';
 export { ErrorBoundary } from './ErrorBoundary';
 export { PermissionGuard } from './PermissionGuard';
 export { FormDialog } from './FormDialog';
+export { ListDialog } from './ListDialog';
+export type { ListDialogProps, RowAction, ToolbarConfig, PaginationConfig, SearchConfig, TreeConfig, Density, DialogSize as ListDialogSize, DefaultExpanded as ListDefaultExpanded } from './ListDialog/types';
 export { AddButton } from './AddButton';
 export { RowActionButton } from './RowActionButton';
 export type { RowActionVariant } from './RowActionButton';
