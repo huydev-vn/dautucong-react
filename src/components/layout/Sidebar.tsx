@@ -218,8 +218,15 @@ export function Sidebar() {
                             )
                           }
                         >
-                          <ChildIcon size={13} className="shrink-0 opacity-75" />
-                          <span className="leading-snug">{child.Ten}</span>
+                          {({ isActive }) => (
+                            <>
+                              <ChildIcon size={13} className="shrink-0 opacity-75" />
+                              <span className="flex-1 leading-snug">{child.Ten}</span>
+                              {isActive && (
+                                <span className="ml-auto size-1.5 shrink-0 rounded-full bg-sky-300" />
+                              )}
+                            </>
+                          )}
                         </NavLink>
                       </li>
                     );

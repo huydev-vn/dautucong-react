@@ -12,6 +12,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { HighlightText } from "@/components/shared/HighlightText";
 import { AddButton } from "@/components/shared/AddButton";
 import { RowActionButton } from "@/components/shared/RowActionButton";
+import { TableBadge } from "@/components/shared/TableBadge";
+import { DetailDialog } from "@/components/shared/DetailDialog";
 import { cn } from "@/lib/utils";
 import { CHUC_NANG_IDS, MA_TAC_VU } from "@/utils/constants";
 import type { MaTacVu } from "@/utils/constants";
@@ -333,6 +335,7 @@ export function ChucNangListPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editItem, setEditItem] = useState<ChucNang | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChucNang | null>(null);
+  const [detailItem, setDetailItem] = useState<ChucNang | null>(null);
 
   // Luôn fetch toàn bộ, lọc client-side để giữ ngữ cảnh cha-con
   const { data, isLoading } = useChucNangList({
@@ -345,6 +348,13 @@ export function ChucNangListPage() {
 
   const items = useMemo(() => data?.Items ?? [], [data?.Items]);
   const total = data?.Total ?? 0;
+
+  // Map tra cứu tên cha cho DetailDialog
+  const itemsMap = useMemo(() => new Map(items.map((i) => [i.Id, i])), [items]);
+  const detailTenCha = useMemo(() => {
+    if (!detailItem?.IdCha) return null;
+    return itemsMap.get(detailItem.IdCha)?.Ten ?? null;
+  }, [detailItem, itemsMap]);
 
   // Build tree — memoized, lọc client-side kèm ngữ cảnh cha
   const tree = useMemo(() => buildTree(items, search), [items, search]);
@@ -381,9 +391,7 @@ export function ChucNangListPage() {
   );
 
   const handleView = useCallback((item: ChucNang) => {
-    // TODO: mở drawer xem chi tiết (read-only)
-    setEditItem(item);
-    setFormOpen(true);
+    setDetailItem(item);
   }, []);
 
   const handleEdit = useCallback((item: ChucNang) => {
@@ -499,6 +507,24 @@ export function ChucNangListPage() {
         loading={saveMutation.isPending}
         onSubmit={handleFormSubmit}
         onClose={() => setFormOpen(false)}
+      />
+
+      <DetailDialog
+        open={!!detailItem}
+        onClose={() => setDetailItem(null)}
+        title="Chi tiết chức năng"
+        size="md"
+        fields={detailItem ? [
+          { label: 'Mã',              value: <span className="font-mono font-semibold text-[#1a3c6e]">{detailItem.Ma}</span> },
+          { label: 'Thứ tự',         value: detailItem.SapXep },
+          { label: 'Tên chức năng',  value: detailItem.Ten, span: 2 },
+          { label: 'URL',            value: detailItem.Url ? <span className="font-mono text-[12px] text-gray-600 break-all">{detailItem.Url}</span> : null, span: 2, hidden: !detailItem.Url },
+          { label: 'Icon',           value: detailItem.Icon ? <span className="font-mono text-gray-600">{detailItem.Icon}</span> : null, hidden: !detailItem.Icon },
+          { label: 'Loại',           value: detailItem.GhiChu && GROUP_BADGE[detailItem.GhiChu] ? <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${GROUP_BADGE[detailItem.GhiChu].cls}`}>{GROUP_BADGE[detailItem.GhiChu].label}</span> : null, hidden: !detailItem.GhiChu || !GROUP_BADGE[detailItem.GhiChu ?? ''] },
+          { label: 'Chức năng cha', value: detailTenCha ?? '— (nhóm gốc)', span: 2, hidden: !detailItem.IdCha },
+          { label: 'Ngày tạo',       value: <span className="text-gray-500">{detailItem.NgayTao ?? '—'}</span> },
+          { label: 'Người tạo',      value: <span className="text-gray-500">{detailItem.NguoiTao ?? '—'}</span> },
+        ] : []}
       />
 
       <ConfirmDialog

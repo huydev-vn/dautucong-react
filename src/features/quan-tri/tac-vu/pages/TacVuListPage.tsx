@@ -9,6 +9,7 @@ import { TableBadge } from '@/components/shared/TableBadge';
 import { AddButton } from '@/components/shared/AddButton';
 import { DataTable } from '@/components/shared/DataTable';
 import { TableRowActions, type RowActionDef } from '@/components/shared/TableRowActions';
+import { DetailDialog } from '@/components/shared/DetailDialog';
 import { DEFAULT_PAGE_SIZE, CHUC_NANG_IDS, MA_TAC_VU } from '@/utils/constants';
 import { usePermission } from '@/features/auth/hooks/usePermission';
 import { useTacVuList, useSaveTacVu, useDeleteTacVu } from '../hooks/useTacVu';
@@ -109,6 +110,7 @@ export function TacVuListPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editItem, setEditItem] = useState<TacVu | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TacVu | null>(null);
+  const [detailItem, setDetailItem] = useState<TacVu | null>(null);
 
   const { data, isLoading } = useTacVuList({
     pageNumber: page,
@@ -123,7 +125,7 @@ export function TacVuListPage() {
   const total = data?.Total ?? 0;
 
   const handleSearchChange = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
-  const handleView   = useCallback((_item: TacVu) => { void _item; /* TODO: dialog chi tiết */ }, []);
+  const handleView   = useCallback((item: TacVu) => setDetailItem(item), []);
   const handleEdit   = useCallback((item: TacVu) => {
     setEditItem(item);
     setFormOpen(true);
@@ -190,6 +192,23 @@ export function TacVuListPage() {
         loading={saveMutation.isPending}
         onSubmit={handleSave}
         onClose={handleFormClose}
+      />
+
+      <DetailDialog
+        open={!!detailItem}
+        onClose={() => setDetailItem(null)}
+        title="Chi tiết tác vụ"
+        size="sm"
+        fields={detailItem ? [
+          { label: 'Mã',     value: <span className="font-mono font-semibold text-[#1a3c6e]">{detailItem.Ma}</span> },
+          { label: 'Thứ tự', value: detailItem.Stt },
+          { label: 'Tên',    value: detailItem.Ten, span: 2 },
+          { label: 'Icon',   value: detailItem.Icon ? <span className="font-mono text-gray-600">{detailItem.Icon}</span> : null, hidden: !detailItem.Icon },
+          { label: 'Vị trí', value: detailItem.ViTri ? <TableBadge label={detailItem.ViTri} variant="blue" /> : null, hidden: !detailItem.ViTri },
+          { label: 'Style',  value: detailItem.Style ? <span className="font-mono text-gray-600">{detailItem.Style}</span> : null, hidden: !detailItem.Style },
+          { label: 'Ngày tạo',   value: <span className="text-gray-500">{detailItem.NgayTao ?? '—'}</span> },
+          { label: 'Người tạo', value: <span className="text-gray-500">{detailItem.NguoiTao ?? '—'}</span> },
+        ] : []}
       />
 
       <ConfirmDialog

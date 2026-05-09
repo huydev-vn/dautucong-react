@@ -1,9 +1,18 @@
 import type { ReactNode } from 'react';
+import { CircleHelp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export interface FormFieldProps {
   label: string;
   required?: boolean;
+  /** Giải thích field — hiện icon ? bên cạnh label, hover/focus để xem */
+  tooltip?: string;
   error?: string;
   hint?: string;
   className?: string;
@@ -17,6 +26,7 @@ export interface FormFieldProps {
 export function FormField({
   label,
   required,
+  tooltip,
   error,
   hint,
   className,
@@ -24,14 +34,35 @@ export function FormField({
 }: FormFieldProps) {
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <label className="text-[12px] font-medium leading-none text-gray-600">
-        {label}
-        {required && (
-          <span className="ml-0.5 text-red-500" aria-hidden="true">
-            *
-          </span>
+      <div className="flex items-center gap-1">
+        <label className="text-[12px] font-medium leading-none text-gray-600">
+          {label}
+          {required && (
+            <span className="ml-0.5 text-red-500" aria-hidden="true">
+              *
+            </span>
+          )}
+        </label>
+        {tooltip && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  className="flex items-center text-gray-400 transition-colors hover:text-[#1a3c6e]/60 focus:outline-none"
+                  aria-label={`Giải thích: ${label}`}
+                >
+                  <CircleHelp size={12} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[220px] text-center text-[12px] leading-relaxed">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
-      </label>
+      </div>
 
       {children}
 

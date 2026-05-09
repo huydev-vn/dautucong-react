@@ -19,6 +19,8 @@ interface SelectFieldProps<T extends FieldValues> {
   required?: boolean;
   disabled?: boolean;
   hint?: string;
+  /** Giải thích field — hiện icon ? bên cạnh label */
+  tooltip?: string;
   className?: string;
 }
 
@@ -37,6 +39,7 @@ export function SelectField<T extends FieldValues>({
   required,
   disabled,
   hint,
+  tooltip,
   className,
 }: SelectFieldProps<T>) {
   return (
@@ -47,6 +50,7 @@ export function SelectField<T extends FieldValues>({
         <FormField
           label={label}
           required={required}
+          tooltip={tooltip}
           error={fieldState.error?.message}
           hint={hint}
           className={className}

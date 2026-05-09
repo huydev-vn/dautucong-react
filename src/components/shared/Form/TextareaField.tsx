@@ -15,6 +15,8 @@ interface TextareaFieldProps<T extends FieldValues> {
   /** Tắt resize — dùng khi chiều cao cố định */
   noResize?: boolean;
   hint?: string;
+  /** Giải thích field — hiện icon ? bên cạnh label */
+  tooltip?: string;
   className?: string;
 }
 
@@ -28,6 +30,7 @@ export function TextareaField<T extends FieldValues>({
   rows = 3,
   noResize = false,
   hint,
+  tooltip,
   className,
 }: TextareaFieldProps<T>) {
   return (
@@ -38,6 +41,7 @@ export function TextareaField<T extends FieldValues>({
         <FormField
           label={label}
           required={required}
+          tooltip={tooltip}
           error={fieldState.error?.message}
           hint={hint}
           className={className}

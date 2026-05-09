@@ -217,6 +217,8 @@ export interface SearchSelectFieldProps<T extends FieldValues> {
   required?: boolean;
   disabled?: boolean;
   hint?: string;
+  /** Giải thích field — hiện icon ? bên cạnh label */
+  tooltip?: string;
   className?: string;
 
   /**
@@ -321,6 +323,7 @@ export function SearchSelectField<T extends FieldValues>({
   required,
   disabled,
   hint,
+  tooltip,
   className,
   options,
   clearable,
@@ -406,6 +409,7 @@ export function SearchSelectField<T extends FieldValues>({
           <FormField
             label={label}
             required={required}
+            tooltip={tooltip}
             error={fieldState.error?.message}
             hint={hint}
             className={className}

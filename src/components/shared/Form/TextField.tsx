@@ -14,6 +14,8 @@ interface TextFieldProps<T extends FieldValues> {
   readOnly?: boolean;
   type?: 'text' | 'email' | 'password' | 'tel' | 'url';
   hint?: string;
+  /** Giải thích field — hiện icon ? bên cạnh label */
+  tooltip?: string;
   className?: string;
 }
 
@@ -27,6 +29,7 @@ export function TextField<T extends FieldValues>({
   readOnly,
   type = 'text',
   hint,
+  tooltip,
   className,
 }: TextFieldProps<T>) {
   return (
@@ -37,6 +40,7 @@ export function TextField<T extends FieldValues>({
         <FormField
           label={label}
           required={required}
+          tooltip={tooltip}
           error={fieldState.error?.message}
           hint={hint}
           className={className}

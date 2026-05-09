@@ -97,7 +97,8 @@ export function DiaBanForm({ open, editItem, loading = false, onSubmit, onClose 
             name="ma"
             label="Mã địa bàn"
             required
-            placeholder="VD: 01, HN, ..."
+            placeholder="VD: 01, BN, ..."
+            tooltip="Mã ngắn định danh địa bàn, duy nhất trong hệ thống. Thường là mã hành chính (VD: 01 = Bắc Ninh)."
           />
           <NumberField
             control={form.control}
@@ -105,6 +106,7 @@ export function DiaBanForm({ open, editItem, loading = false, onSubmit, onClose 
             label="Thứ tự"
             placeholder="VD: 1"
             min={1}
+            tooltip="Thứ tự hiển thị trong danh sách. Số nhỏ hơn hiển thị trước."
           />
 
           <TextField
@@ -112,8 +114,9 @@ export function DiaBanForm({ open, editItem, loading = false, onSubmit, onClose 
             name="ten"
             label="Tên địa bàn"
             required
-            placeholder="VD: Thành phố Hà Nội"
+            placeholder="VD: Thành phố Bắc Ninh"
             className="col-span-2"
+            tooltip="Tên đầy đủ của địa bàn, hiển thị trên giao diện và báo cáo."
           />
 
           <SearchSelectField
@@ -124,6 +127,7 @@ export function DiaBanForm({ open, editItem, loading = false, onSubmit, onClose 
             placeholder="— Không có cha (node gốc) —"
             clearable
             className="col-span-2"
+            tooltip="Địa bàn cấp cha. Để trống nếu đây là địa bàn gốc (cấp cao nhất). Chọn để tạo cấu trúc phân cấp."
           />
 
           <SelectField
@@ -132,6 +136,7 @@ export function DiaBanForm({ open, editItem, loading = false, onSubmit, onClose 
             label="Hiệu lực"
             required
             options={HIEU_LUC_OPTIONS}
+            tooltip="Trạng thái sử dụng. Địa bàn 'Ngừng dùng' vẫn lưu lịch sử nhưng không xuất hiện ở các màn nhập liệu mới."
           />
 
           <TextareaField
@@ -140,6 +145,7 @@ export function DiaBanForm({ open, editItem, loading = false, onSubmit, onClose 
             label="Ghi chú"
             rows={2}
             className="col-span-2"
+            tooltip="Thông tin bổ sung về địa bàn, không bắt buộc."
           />
         </div>
       </FormDialog>

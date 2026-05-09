@@ -20,6 +20,8 @@ interface DateFieldProps<T extends FieldValues> {
    */
   max?: string;
   hint?: string;
+  /** Giải thích field — hiện icon ? bên cạnh label */
+  tooltip?: string;
   className?: string;
 }
 
@@ -38,6 +40,7 @@ export function DateField<T extends FieldValues>({
   min,
   max,
   hint,
+  tooltip,
   className,
 }: DateFieldProps<T>) {
   return (
@@ -48,6 +51,7 @@ export function DateField<T extends FieldValues>({
         <FormField
           label={label}
           required={required}
+          tooltip={tooltip}
           error={fieldState.error?.message}
           hint={hint}
           className={className}

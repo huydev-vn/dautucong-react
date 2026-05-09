@@ -12,6 +12,8 @@ interface NumberFieldProps<T extends FieldValues> {
   min?: number;
   max?: number;
   hint?: string;
+  /** Giải thích field — hiện icon ? bên cạnh label */
+  tooltip?: string;
   className?: string;
 }
 
@@ -25,6 +27,7 @@ export function NumberField<T extends FieldValues>({
   min,
   max,
   hint,
+  tooltip,
   className,
 }: NumberFieldProps<T>) {
   return (
@@ -35,6 +38,7 @@ export function NumberField<T extends FieldValues>({
         <FormField
           label={label}
           required={required}
+          tooltip={tooltip}
           error={fieldState.error?.message}
           hint={hint}
           className={className}
