@@ -199,7 +199,7 @@ export function Sidebar() {
               <div
                 className={cn(
                   'overflow-hidden transition-all duration-300 ease-in-out',
-                  isOpen ? 'max-h-[500px]' : 'max-h-0',
+                  isOpen ? 'max-h-[2000px]' : 'max-h-0',
                 )}
               >
                 <ul className="mt-0.5 ml-3 space-y-0.5 border-l border-sky-400/30 pl-3 pb-0.5">

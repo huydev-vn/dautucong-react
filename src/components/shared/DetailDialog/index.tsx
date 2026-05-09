@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -106,12 +107,16 @@ export function DetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className={cn(SIZE_CLS[size])}>
+      <DialogContent
+        className={cn(SIZE_CLS[size])}
+        aria-describedby={description ? undefined : 'detail-dialog-desc'}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && (
-            <p className="text-[12.5px] text-gray-500">{description}</p>
-          )}
+          {description
+            ? <DialogDescription className="text-[12.5px]">{description}</DialogDescription>
+            : <DialogDescription id="detail-dialog-desc" className="sr-only">{title}</DialogDescription>
+          }
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-x-5 gap-y-3.5 text-[13px]">

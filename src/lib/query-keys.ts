@@ -30,11 +30,6 @@ export const queryKeys = {
     dropdown: () => ['nhom', 'dropdown'] as const,
   },
 
-  donVi: {
-    all:      () => ['don-vi'] as const,
-    dropdown: () => ['don-vi', 'dropdown'] as const,
-  },
-
   // ── Quản trị hệ thống ─────────────────────────────────────────────────────────
   chucNang: {
     all:      () => ['chuc-nang'] as const,
@@ -122,6 +117,13 @@ export const queryKeys = {
 
   // ── Danh mục Dm_* (HeThong API) ──────────────────────────────────────────────
   danhMuc: {
+    donVi: {
+      all:      () => ['dm', 'don-vi'] as const,
+      lists:    () => ['dm', 'don-vi', 'list'] as const,
+      list:     (params?: unknown) => ['dm', 'don-vi', 'list', params] as const,
+      detail:   (id: number) => ['dm', 'don-vi', 'detail', id] as const,
+      dropdown: () => ['dm', 'don-vi', 'dropdown'] as const,
+    },
     linhVuc: {
       all:    () => ['dm', 'linh-vuc'] as const,
       list:   (params?: unknown) => ['dm', 'linh-vuc', 'list', params] as const,

@@ -94,17 +94,25 @@ ${input:domainSlug}: {
 
 ### 6. List Page — `src/features/danh-muc/{domainSlug}/pages/${input:domainName}ListPage.tsx`
 
-**Nếu KHÔNG hierarchy — DataTable:**
-- State: `search`, `page`, `filterHieuLuc`, `formOpen`, `editItem`, `deleteTarget`, `detailItem`
-- `use${input:domainName}List({ pageNumber: page, pageSize: 20, keyword: search, hieuLuc: filterHieuLuc })`
-- `<DataTable>` với `onPageChange`
-
-**Nếu CÓ hierarchy — TreeTable:**
-- State: `search`, `filterHieuLuc`, `formOpen`, `editItem`, `deleteTarget`, `detailItem`
-- `use${input:domainName}All({ hieuLuc: filterHieuLuc })` — KHÔNG truyền keyword
-- `filterTreeItems()` function ở module-level (không trong component) — xem skill file
-- `<TreeTable>` với `rowKey="Id"`, `parentKey="IdCha"`, `defaultExpanded={search.trim() ? 'all' : 'first-level'}`
-- `badge={allItems.length}` (tổng) không phải `items.length` (sau filter)
+> **Chọn component bảng dựa theo `hasHierarchy`:**
+>
+> | Trường hợp | Component | Import |
+> |------------|-----------|--------|
+> | `hasHierarchy = no` (dữ liệu phẳng) | `<DataTable>` | `@/components/shared/DataTable` |
+> | `hasHierarchy = yes` (có cấp cha-con) | `<TreeTable>` | `@/components/shared/TreeTable` |
+>
+> **DataTable** — server-side pagination, keyword search gửi lên backend:
+> - State: `search`, `page`, `filterHieuLuc`, ...
+> - Hook: `use${domainName}List({ pageNumber: page, pageSize: 20, keyword: search, hieuLuc: filterHieuLuc })`
+> - Reset `page` về 1 khi `search` hoặc `filterHieuLuc` thay đổi
+> - Props: `<DataTable columns data={data?.Items ?? []} loading pageSize={PAGE_SIZE} total={data?.Total ?? 0} page onPageChange />`
+>
+> **TreeTable** — load toàn bộ client-side, keyword filter ở frontend để giữ cây:
+> - State: `search`, `filterHieuLuc`, ... (KHÔNG có `page`)
+> - Hook: `use${domainName}All({ hieuLuc: filterHieuLuc })` — KHÔNG truyền keyword
+> - `filterTreeItems()` function ở module-level (xem skill file) — lọc và giữ tổ tiên
+> - Props: `<TreeTable rowKey="Id" parentKey="IdCha" defaultExpanded={search.trim() ? 'all' : 'first-level'} pageSize={20} />`
+> - `badge={allItems.length}` (tổng server) không phải `items.length` (sau filter client)
 
 **Cả hai:**
 - `buildColumns()` ở module-level, KHÔNG định nghĩa trong component
