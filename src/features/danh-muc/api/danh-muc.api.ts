@@ -1,57 +1,60 @@
 import axiosInstance from '@/lib/axios';
 import type { ApiWrapped, PagedResult, BaseModel } from '@/types';
-import type { DmListParams } from '../types/danh-muc.types';
 
 /**
- * Factory tạo API client cho các Dm_* controller trong HeThong.
+ * Factory tạo API client cho các Danh Mục (Dm) theo convention của backend.
  *
  * Convention backend:
  *   GET  /{controller}/LietKe?pageNumber=&pageSize=&searchText=&hieuLuc=
  *   GET  /{controller}/LayTheoId?id={decimal}
  *   POST /{controller}/Nhap          body: model
  *   POST /{controller}/Xoa?id={decimal}
+ *
+ * Cách dùng:
+ *   const base = createDmApi<MyModel, MyFormValues, MyListParams>('Dm_TenDanhMuc');
+ *   export const myApi = { ...base, /* custom methods * / };
  */
-function createDmApi<T extends BaseModel>(controller: string) {
+function createDmApi<
+  TModel extends BaseModel,
+  TFormValues,
+  TListParams extends object = object,
+>(controller: string) {
+  const BASE = `/${controller}`;
+
   return {
-    getList: async (params?: DmListParams): Promise<PagedResult<T>> => {
-      const { data } = await axiosInstance.get<ApiWrapped<PagedResult<T>>>(
-        `/${controller}/LietKe`,
-        { params },
-      );
+    /**
+     * GET /{controller}/LietKe — danh sách phân trang
+     */
+    getList: async (params?: TListParams): Promise<PagedResult<TModel>> => {
+      const { data } = await axiosInstance.get<ApiWrapped<PagedResult<TModel>>>(`${BASE}/LietKe`, { params });
       return data.data;
     },
 
-    getById: async (id: number): Promise<T> => {
-      const { data } = await axiosInstance.get<ApiWrapped<T>>(
-        `/${controller}/LayTheoId`,
-        { params: { id } },
-      );
+    /**
+     * GET /{controller}/LayTheoId?id= — chi tiết 1 bản ghi
+     * (override khi controller dùng endpoint khác, vd: ThongTin)
+     */
+    getById: async (id: number): Promise<TModel> => {
+      const { data } = await axiosInstance.get<ApiWrapped<TModel>>(`${BASE}/LayTheoId`, { params: { id } });
       return data.data;
     },
 
-    create: async (payload: Omit<T, keyof BaseModel>): Promise<number> => {
-      const { data } = await axiosInstance.post<ApiWrapped<number>>(
-        `/${controller}/Nhap`,
-        payload,
-      );
+    /**
+     * POST /{controller}/Nhap — thêm mới (id=0) hoặc cập nhật (id>0)
+     */
+    save: async (model: TFormValues): Promise<number> => {
+      const { data } = await axiosInstance.post<ApiWrapped<number>>(`${BASE}/Nhap`, model);
       return data.data;
     },
 
+    /**
+     * POST /{controller}/Xoa?id= — xoá mềm
+     */
     delete: async (id: number): Promise<number> => {
-      const { data } = await axiosInstance.post<ApiWrapped<number>>(
-        `/${controller}/Xoa`,
-        null,
-        { params: { id } },
-      );
+      const { data } = await axiosInstance.post<ApiWrapped<number>>(`${BASE}/Xoa`, null, { params: { id } });
       return data.data;
     },
   };
 }
 
 export { createDmApi };
-
-// ── Các API cụ thể — thêm mới khi cần quản lý thêm danh mục ──────────────
-import type { Dm_LinhVucItem, Dm_DuAnDauTuItem } from '../types/danh-muc.types';
-
-export const danhMucLinhVucApi = createDmApi<Dm_LinhVucItem>('Dm_LinhVuc');
-export const danhMucDuAnDauTuApi = createDmApi<Dm_DuAnDauTuItem>('Dm_DuAnDauTu');

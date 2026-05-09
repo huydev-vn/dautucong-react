@@ -56,20 +56,13 @@ export const PAGE_REGISTRY: PageEntry[] = [
   { path: '/qtht/phanquyenthdv',  title: 'Phân quyền tổng hợp đơn vị' },
 
   // ── Quản lý danh mục (/qldm) ────────────────────────────────────────────────
-  {
-    path: '/qldm',
-    component: lazy(() =>
-      import('@/features/danh-muc/pages/DanhMucPage').then((m) => ({ default: m.DanhMucPage })),
-    ),
-  },
-  {
-    path: '/qldm/dmnhathau',
-    component: lazy(() =>
-      import('@/features/danh-muc/pages/NhaThauPage').then((m) => ({ default: m.NhaThauPage })),
-    ),
-  },
+  { path: '/qldm',          title: 'Quản lý danh mục' },
+  { path: '/qldm/dmnhathau', title: 'Danh mục nhà thầu' },
   { path: '/qldm/dmnganhlinhvucdautu',   title: 'Danh mục ngành / lĩnh vực đầu tư' },
-  { path: '/qldm/dmdiaban',              title: 'Danh mục địa bàn' },
+  {
+    path: '/qldm/dmdiaban',
+    component: lazy(() => import('@/features/danh-muc/dia-ban/pages/DiaBanListPage').then((m) => ({ default: m.DiaBanListPage }))),
+  },
   { path: '/qldm/dmduandautu',           title: 'Danh mục dự án đầu tư' },
   { path: '/qldm/dmchudautu',            title: 'Danh mục chủ đầu tư' },
   { path: '/qldm/dmloaigoithau',         title: 'Danh mục loại gói thầu' },

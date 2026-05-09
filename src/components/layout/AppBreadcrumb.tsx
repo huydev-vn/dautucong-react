@@ -21,9 +21,9 @@ const SEGMENT_LABELS: Record<string, string> = {
   // ── Danh mục dùng chung ──────────────────────────────────────
   'qldm':        'Danh mục',
   'dmphanloailuatdauthau':'Phân loại luật đấu thầu',
-  'dia-ban':         'Địa bàn',
-  'du-an-dau-tu':    'Dự án đầu tư',
-  'nha-dau-tu-tckt': 'Nhà đầu tư TCKT',
+  'dmdiaban':         'Danh mục địa bàn',
+  'dmdutoandautu':    'Danh mục dự án đầu tư',
+  'dmnhadaututckt': 'Danh mục nhà đầu tư TCKT',
 
   // ── Nghiệp vụ chính ──────────────────────────────────────────
   'du-an':              'Dự án',

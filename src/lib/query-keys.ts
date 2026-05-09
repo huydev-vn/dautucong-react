@@ -132,5 +132,13 @@ export const queryKeys = {
       list:   (params?: unknown) => ['dm', 'du-an-dau-tu', 'list', params] as const,
       detail: (id: number) => ['dm', 'du-an-dau-tu', 'detail', id] as const,
     },
+    diaBan: {
+      all:      () => ['dm', 'dia-ban'] as const,
+      lists:    () => ['dm', 'dia-ban', 'list'] as const,
+      list:     (params?: unknown) => ['dm', 'dia-ban', 'list', params] as const,
+      detail:   (id: number) => ['dm', 'dia-ban', 'detail', id] as const,
+      /** Cascade dropdown — byParent(undefined) = cấp 1, byParent(id) = con của id */
+      byParent: (idCha?: number | null) => ['dm', 'dia-ban', 'by-parent', idCha ?? null] as const,
+    },
   },
 } as const;
