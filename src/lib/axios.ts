@@ -2,6 +2,7 @@ import axios, { type AxiosInstance } from 'axios';
 import { toast } from 'sonner';
 import { STORAGE_KEYS } from '@/utils/constants';
 import { tokenStore } from './token-store';
+import { logApiCall } from './dev-logger';
 
 const HE_THONG_BASE_URL = import.meta.env.VITE_HE_THONG_API_URL ?? 'http://localhost:5281/api';
 const NGHIEP_VU_BASE_URL = import.meta.env.VITE_NGHIEP_VU_API_URL ?? 'http://localhost:5282/api';
@@ -114,6 +115,57 @@ attachRequestInterceptor(heThongAxios);
 attachRequestInterceptor(nghiepVuAxios);
 attachResponseInterceptor(heThongAxios);
 attachResponseInterceptor(nghiepVuAxios);
+
+// ── DEV: Logging interceptor ─────────────────────────────────
+// Gắn SAU các interceptors auth để log response cuối cùng (sau khi đã refresh token).
+// Dùng biến _startTime trên AxiosRequestConfig (extended bởi internal type).
+function attachLoggingInterceptor(instance: AxiosInstance) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  instance.interceptors.request.use((config: any) => {
+    config._startTime = Date.now();
+    return config;
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  instance.interceptors.response.use(
+    (response) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cfg = response.config as any;
+      logApiCall({
+        method:   cfg.method ?? 'GET',
+        url:      (cfg.baseURL ?? '') + (cfg.url ?? ''),
+        duration: Date.now() - (cfg._startTime ?? Date.now()),
+        status:   response.status,
+        params:   cfg.params,
+        body:     cfg.data ? JSON.parse(cfg.data) : undefined,
+        data:     response.data,
+      });
+      return response;
+    },
+    (error) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cfg = error.config as any;
+      if (cfg) {
+        logApiCall({
+          method:       cfg.method ?? 'GET',
+          url:          (cfg.baseURL ?? '') + (cfg.url ?? ''),
+          duration:     Date.now() - (cfg._startTime ?? Date.now()),
+          status:       error.response?.status,
+          params:       cfg.params,
+          body:         cfg.data ? (() => { try { return JSON.parse(cfg.data); } catch { return cfg.data; } })() : undefined,
+          data:         error.response?.data,
+          errorMessage: error.message,
+        });
+      }
+      return Promise.reject(error);
+    },
+  );
+}
+
+if (import.meta.env.DEV) {
+  attachLoggingInterceptor(heThongAxios);
+  attachLoggingInterceptor(nghiepVuAxios);
+}
 
 // Backward compat — các file dùng default import vẫn trỏ về heThongAxios
 export const axiosInstance = heThongAxios;
